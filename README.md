@@ -21,4 +21,4 @@ that for some projects I work on.
 
 ## License
 
-See the [LICENSE](https://github.com/smithgp/gsmith-eclipse/README.md) file for details.
+See the LICENSE file for details.
