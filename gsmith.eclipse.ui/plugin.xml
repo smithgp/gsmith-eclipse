@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.6"?>
+<plugin>
+   <extension-point id="textConverters" name="Scratch Pad Text Converters" schema="schema/textConverters.exsd"/>
+   <extension
+         point="org.eclipse.ui.preferenceTransfer">
+      <transfer
+            id="gsmith.eclipse.ui.transfer"
+            name="%prefs.transfer.name">
+         <mapping
+               scope="instance">
+            <entry node="gsmith.eclipse.ui">
+            </entry>
+            <entry node="gsmith.eclipse.ui/windowSizes">
+            </entry>
+            <entry node="gsmith.eclipse.ui.images">
+            </entry>
+         </mapping>
+      </transfer>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.eclipse.ui.IEditorPart"
+            class="gsmith.eclipse.ui.IEditorPartAdapterFactory">
+         <adapter type="org.eclipse.core.resources.IResource"/>
+         <adapter type="org.eclipse.core.resources.IFile"/>
+         <adapter type="org.eclipse.core.expressions.IIterable"/>
+         <adapter type="org.eclipse.core.expressions.ICountable"/>
+      </factory>
+   </extension>
+   <extension point="org.eclipse.core.expressions.definitions">
+      <!-- wrap count and iterate expressions with this to avoid stray
+           CoreExceptions in the error log -->
+      <definition id="gsmith.eclipse.ui.commands.isCountable">
+          <or>
+              <instanceof value="java.util.Collection"/>
+              <instanceof value="org.eclipse.core.expressions.ICountable"/>
+              <adapt type="org.eclipse.core.expressions.ICountable"/>
+          </or>
+      </definition>
+      <definition id="gsmith.eclipse.ui.commands.isIterable">
+          <or>
+              <instanceof value="java.util.Collection"/>
+              <instanceof value="org.eclipse.core.expressions.IIterable"/>
+              <adapt type="org.eclipse.core.expressions.IIterable"/>
+          </or>
+      </definition>
+
+      <definition id="gsmith.eclipse.ui.commands.isFile">
+         <and>
+            <and>
+                <reference definitionId="gsmith.eclipse.ui.commands.isCountable"/>
+                <count value="1"/>
+                <reference definitionId="gsmith.eclipse.ui.commands.isIterable"/>
+            </and>
+            <iterate operator="or">
+               <adapt type="org.eclipse.core.resources.IResource">
+                  <instanceof value="org.eclipse.core.resources.IFile"/>
+               </adapt>
+            </iterate>
+         </and>
+      </definition>
+      <definition id="gsmith.eclipse.ui.commands.isReadOnlyFile">
+         <and>
+            <and>
+                <reference definitionId="gsmith.eclipse.ui.commands.isCountable"/>
+                <count value="1"/>
+                <reference definitionId="gsmith.eclipse.ui.commands.isIterable"/>
+            </and>
+            <iterate operator="or">
+               <adapt type="org.eclipse.core.resources.IResource">
+                  <instanceof value="org.eclipse.core.resources.IFile"/>
+                  <test property="org.eclipse.core.resources.readOnly" value="true"/>
+               </adapt>
+            </iterate>
+         </and>
+      </definition>
+      <definition id="gsmith.eclipse.ui.commands.isWritableFile">
+         <and>
+            <and>
+                <reference definitionId="gsmith.eclipse.ui.commands.isCountable"/>
+                <count value="1"/>
+                <reference definitionId="gsmith.eclipse.ui.commands.isIterable"/>
+            </and>
+            <iterate operator="or">
+               <adapt type="org.eclipse.core.resources.IResource">
+                  <instanceof value="org.eclipse.core.resources.IFile"/>
+                  <test property="org.eclipse.core.resources.readOnly" value="false"/>
+               </adapt>
+            </iterate>
+         </and>
+      </definition>
+   </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.ui.category.window"
+            defaultHandler="gsmith.eclipse.ui.commands.SetWindowSizeCommandHandler"
+            description="%windowSizeCommandDescripton"
+            id="gsmith.eclipse.ui.command.windowSize"
+            name="%windowSizeCommandName">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            defaultHandler="gsmith.eclipse.ui.commands.RefreshWorkspaceCommandHandler"
+            description="%refreshWorkspaceCommandDescriptionRefresh all open projects in the workspace."
+            id="gsmith.eclipse.ui.command.refreshWorkspace"
+            name="%refreshWorkspaceCommandName">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            defaultHandler="gsmith.eclipse.ui.commands.ToggleReadOnlyFileCommandHandler"
+            description="%toggleReadOnlyCommandDescription"
+            id="gsmith.eclipse.ui.command.toggleReadOnly"
+            name="%toggleReadOnlyCommandName">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            description="%makeReadOnlyCommandDescriptionMake the selected file read-only"
+            id="gsmith.eclipse.ui.command.makeReadOnly"
+            name="%makeReadOnlyCommandName">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            description="%makeWritableCommandDescriptionMake the selected file writable."
+            id="gsmith.eclipse.ui.command.makeWritableOnly"
+            name="%makeWritableCommandName">
+      </command>
+      <command
+            categoryId="org.eclipse.ui.category.file"
+            description="%touchCommandDescription"
+            id="gsmith.eclipse.ui.command.touch"
+            name="%touchCommandName">
+      </command>
+   </extension>
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="gsmith.eclipse.ui.commands.ToggleReadOnlyFileCommandHandler:selection,editor_input,editor"
+            commandId="gsmith.eclipse.ui.command.toggleReadOnly">
+         <activeWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="gsmith.eclipse.ui.commands.ToggleReadOnlyFileCommandHandler:forceReadOnly,menu_selection,menu_editor"
+            commandId="gsmith.eclipse.ui.command.makeReadOnly">
+         <activeWhen>
+            <or>
+               <with variable="activeMenuSelection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeMenuEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="activeMenuSelection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeMenuEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="gsmith.eclipse.ui.commands.ToggleReadOnlyFileCommandHandler:forceReadOnly,selection,editor_input,editor"
+            commandId="gsmith.eclipse.ui.command.makeReadOnly">
+         <activeWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="gsmith.eclipse.ui.commands.ToggleReadOnlyFileCommandHandler:forceWritable,menu_selection,menu_editor"
+            commandId="gsmith.eclipse.ui.command.makeWritableOnly">
+         <activeWhen>
+            <or>
+               <with variable="activeMenuSelection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeMenuEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="activeMenuSelection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeMenuEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="gsmith.eclipse.ui.commands.ToggleReadOnlyFileCommandHandler:forceWritable,selection,editor_input,editor"
+            commandId="gsmith.eclipse.ui.command.makeWritableOnly">
+         <activeWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="gsmith.eclipse.ui.commands.TouchFileCommandHandler:menu_selection,menu_editor"
+            commandId="gsmith.eclipse.ui.command.touch">
+         <activeWhen>
+            <or>
+               <with variable="activeMenuSelection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeMenuEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="activeMenuSelection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeMenuEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="gsmith.eclipse.ui.commands.TouchFileCommandHandler:selection,editor_input,editor"
+            commandId="gsmith.eclipse.ui.command.touch">
+         <activeWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+            </or>
+         </activeWhen>
+         <enabledWhen>
+            <or>
+               <with variable="selection">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isWritableFile"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+               <with variable="activeEditor">
+                  <reference definitionId="gsmith.eclipse.ui.commands.isReadOnlyFile"/>
+               </with>
+            </or>
+         </enabledWhen>
+      </handler>
+   </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:file?after=refresh">
+         <command
+               commandId="gsmith.eclipse.ui.command.refreshWorkspace"
+               label="%refreshWorkspaceCommandName"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:file?before=properties">
+         <command
+               commandId="gsmith.eclipse.ui.command.makeReadOnly"
+               label="%makeReadOnlyCommandName"
+               style="push">
+             <visibleWhen checkEnabled="true"></visibleWhen>
+         </command>
+         <command
+               commandId="gsmith.eclipse.ui.command.makeWritableOnly"
+               label="%makeWritableCommandName"
+               style="push">
+             <visibleWhen checkEnabled="true"></visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any">
+         <command
+               commandId="gsmith.eclipse.ui.command.makeReadOnly"
+               label="%makeReadOnlyCommandName"
+               style="push">
+             <visibleWhen checkEnabled="true"></visibleWhen>
+         </command>
+         <command
+               commandId="gsmith.eclipse.ui.command.makeWritableOnly"
+               label="%makeWritableCommandName"
+               style="push">
+             <visibleWhen checkEnabled="true"></visibleWhen>
+         </command>
+         <command
+               commandId="gsmith.eclipse.ui.command.touch"
+               label="%touchCommandName"
+               style="push">
+             <visibleWhen checkEnabled="true"></visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:window?before=preferences">
+         <menu
+               id="gsmith.eclipse.ui.windowSizesMenu"
+               label="%windowSizeMenuLabel">
+            <dynamic
+                  class="gsmith.eclipse.ui.actions.WindowSizesCompoundContributionItem"
+                  id="gsmith.eclipse.ui.windowSizes">
+            </dynamic>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension point="org.eclipse.ui.bindings">
+      <key
+            commandId="gsmith.eclipse.ui.command.windowSize"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+4 S">
+      </key>
+      <key
+            commandId="gsmith.eclipse.ui.command.refreshWorkspace"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M3+F5">
+      </key>
+      <key
+            commandId="gsmith.eclipse.ui.command.makeReadOnly"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+4 R">
+      </key>
+      <key
+            commandId="gsmith.eclipse.ui.command.makeWritableOnly"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+4 E">
+      </key>
+      <key
+            commandId="gsmith.eclipse.ui.command.touch"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+4 T">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.decorators">
+      <decorator
+            adaptable="true"
+            icon="icons/locked_badge.gif"
+            id="gsmith.eclipse.ui.decorator.readOnlyFile"
+            label="%readOnlyDecoratorLabel"
+            lightweight="true"
+            location="BOTTOM_RIGHT"
+            state="true">
+         <description>
+            %readOnlyDecoratorDescription
+         </description>
+         <enablement>
+            <and>
+               <objectClass name="org.eclipse.core.resources.IFile"/>
+               <objectState
+                     name="readOnly"
+                     value="true">
+               </objectState>
+            </and>
+         </enablement>
+      </decorator>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="gsmith.eclipse.ui.PreferenceInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.eclipse.ui"
+            class="gsmith.eclipse.ui.scratchpad.ScratchPadView"
+            icon="icons/text_signature.png"
+            id=" gsmith.eclipse.ui.scratchpad"
+            name="%scratchpad.view.name"
+            restorable="true">
+         <description>
+            %scratchpad.view.description
+         </description>
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.ui.resourcePerspective">
+         <viewShortcut id=" gsmith.eclipse.ui.scratchpad"/>
+         <view
+               id=" gsmith.eclipse.ui.scratchpad"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.TaskList"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <viewShortcut id=" gsmith.eclipse.ui.scratchpad"/>
+         <view
+               id=" gsmith.eclipse.ui.scratchpad"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ProblemView"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.pde.ui.PDEPerspective">
+         <viewShortcut id=" gsmith.eclipse.ui.scratchpad"/>
+         <view
+               id=" gsmith.eclipse.ui.scratchpad"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ProblemView"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.debug.ui.DebugPerspective">
+         <viewShortcut id=" gsmith.eclipse.ui.scratchpad"/>
+         <view
+               id=" gsmith.eclipse.ui.scratchpad"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.console.ConsoleView"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.eclipse.jst.j2ee.J2EEPerspective">
+         <viewShortcut id=" gsmith.eclipse.ui.scratchpad"/>
+         <view
+               id=" gsmith.eclipse.ui.scratchpad"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.PropertySheet"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+      <perspectiveExtension
+            targetID="org.scala-ide.sdt.core.perspective">
+         <viewShortcut id=" gsmith.eclipse.ui.scratchpad"/>
+         <view
+               id=" gsmith.eclipse.ui.scratchpad"
+               minimized="false"
+               relationship="stack"
+               relative="org.eclipse.ui.views.TaskList"
+               visible="false">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.themes">
+      <themeElementCategory
+            class="gsmith.eclipse.ui.scratchpad.ScratchPadTheme"
+            id="gsmith.eclipse.ui.scratchpad"
+            label="%scratchpad.theme.category.label">
+         <description>
+            %scratchpad.theme.category.description
+         </description>
+      </themeElementCategory>
+      <!-- Text editor foreground/background doesn't use themes for control
+      <colorDefinition
+            categoryId="gsmith.eclipse.ui.scratchpad"
+            id="gsmith.eclipse.ui.scratchpad.foreground"
+            isEditable="true"
+            label="%scratchpad.theme.foreground.label">
+         <description>
+            %scratchpad.theme.foreground.description
+         </description>
+      </colorDefinition>
+      <colorDefinition
+            categoryId="gsmith.eclipse.ui.scratchpad"
+            defaultsTo="org.eclipse.jface.textfont"
+            id="gsmith.eclipse.ui.scratchpad.background"
+            isEditable="true"
+            label="%scratchpad.theme.background.label">
+         <description>
+            %scratchpad.theme.background.description
+         </description>
+      </colorDefinition>
+      -->
+      <fontDefinition
+            categoryId="gsmith.eclipse.ui.scratchpad"
+            defaultsTo="org.eclipse.jface.textfont"
+            id="gsmith.eclipse.ui.scratchpad.textfont"
+            isEditable="true"
+            label="%scratchpad.theme.textfont.label">
+         <description>
+            %scratchpad.theme.textfont.description
+         </description>
+      </fontDefinition>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.ui.category.edit"
+            defaultHandler="gsmith.eclipse.ui.scratchpad.CopySelectionCommandHandler"
+            description="%scratchpad.copy.command.description"
+            id="gsmith.eclipse.ui.scratchpad.copySelection"
+            name="%scratchpad.copy.command.name">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="gsmith.eclipse.ui.scratchpad.copySelection"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M3+C">
+      </key>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:edit?before=paste">
+         <command
+               commandId="gsmith.eclipse.ui.scratchpad.copySelection"
+               icon="icons/text_signature.png"
+               style="push">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="gsmith.eclipse.ui.textConverters">
+      <converter
+            class="gsmith.eclipse.ui.scratchpad.ResourceScratchPadTextConverter">
+         <enablement>
+            <or>
+               <instanceof
+                     value="org.eclipse.core.resources.IResource">
+               </instanceof>
+               <adapt
+                     type="org.eclipse.core.resources.IResource">
+               </adapt>
+            </or>
+         </enablement>
+      </converter>
+      <converter
+            class="gsmith.eclipse.ui.scratchpad.JDTScratchPadTextConverter"
+            priority="150">
+         <enablement>
+            <and>
+               <with variable="platform">
+                   <test
+                         args="org.eclipse.jdt.core"
+                         property="org.eclipse.core.runtime.isBundleInstalled">
+                   </test>
+               </with>
+               <or>
+                  <instanceof
+                        value="org.eclipse.jdt.core.ICompilationUnit">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.ICompilationUnit">
+                  </adapt>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IClassFile">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.IClassFile">
+                  </adapt>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IType">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.IType">
+                  </adapt>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IMember">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.IMember">
+                  </adapt>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IPackageFragmentRoot">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.IPackageFragmentRoot">
+                  </adapt>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IPackageFragment">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.IPackageFragment">
+                  </adapt>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IJarEntryResource">
+                  </instanceof>
+                  <adapt
+                        type="org.eclipse.jdt.core.IJarEntryResource">
+                  </adapt>
+               </or>
+            </and>
+         </enablement>
+      </converter>
+   </extension>
+</plugin>

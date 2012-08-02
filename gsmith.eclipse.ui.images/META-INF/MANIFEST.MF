@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: gsmith.eclipse.ui.images;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: gsmith.eclipse.ui.images.ImagesActivator
+Bundle-Vendor: %Bundle-Vendor
+Require-Bundle: gsmith.eclipse.ui;bundle-version="1.0.0",
+ org.eclipse.ui.ide;bundle-version="3.6.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy

@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="gsmith.eclipse.ui" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="gsmith.eclipse.ui" id="textConverters" name="Scratch Pad Text Converters"/>
+      </appinfo>
+      <documentation>
+         Specify gsmith.eclipse.ui.scratchpad.IScratchPadTextConverter implementations, which will be used by the Copy To Scratch Pad command to convert the workbench selection to scratch pad text.
+      </documentation>
+   </annotation>
+
+   <include schemaLocation="schema://org.eclipse.core.expressions/schema/expressionLanguage.exsd"/>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+      </annotation>
+      <complexType>
+         <sequence minOccurs="0" maxOccurs="unbounded">
+            <element ref="converter"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="converter">
+      <annotation>
+         <documentation>
+            Specifies a scratch pad text converter. If a enablement child is specified, it will be checked prior to calling the converter. The enablement context will have a default variable corresponding to the selection object.
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="enablement" minOccurs="0" maxOccurs="1"/>
+         </sequence>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The class name of the implementation. This must implement the gsmith.eclipse.ui.scratchpad.IScratchPadTextConverter interface.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":gsmith.eclipse.ui.scratchpad.IScratchPadTextConverter"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="priority" type="string">
+            <annotation>
+               <documentation>
+                  An integer priority for sorting and executing converters. Higher means it will run first. The default is 100.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiinfo"/>
+      </appinfo>
+      <documentation>
+         gsmith.eclipse.ui.scratchpad.CopySelectionCommandHandler.getTextForSelection(ISelection) will use this extension point.
+      </documentation>
+   </annotation>
+
+
+
+</schema>
