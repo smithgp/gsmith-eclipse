@@ -124,20 +124,38 @@
             commandId="gsmith.eclipse.ui.images.zoomin"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1++">
+            sequence="M1+=">
       </key>
+      <!-- Cmd+= and Cmd+- are already defined in mac.
+           Switch them to Cmd+Ctrl on mac.
+        -->
+      <sequenceModifier
+            find="M1+="
+            replace="M1+M4+="
+            platforms="cocoa,carbon">
+      </sequenceModifier>
       <key
             commandId="gsmith.eclipse.ui.images.zoomout"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+-">
       </key>
+      <sequenceModifier
+            find="M1+-"
+            replace="M1+M4+-"
+            platforms="cocoa,carbon">
+      </sequenceModifier>
       <key
             commandId="gsmith.eclipse.ui.images.resetzoom"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+0">
       </key>
+      <sequenceModifier
+            find="M1+0"
+            replace="M1+M4+0"
+            platforms="cocoa,carbon">
+      </sequenceModifier>
    </extension>
    <extension
          point="org.eclipse.ui.editorActions">

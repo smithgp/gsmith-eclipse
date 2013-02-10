@@ -397,6 +397,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+M3+F5">
       </key>
+      <!-- Use Cmd+Opt+Ctl+F5 on mac -->
+      <sequenceModifier
+            find="M1+M2+M3+F5"
+            replace="M1+M3+M4+F5"
+            platforms="cocoa,carbon">
+      </sequenceModifier>
       <key
             commandId="gsmith.eclipse.ui.command.makeReadOnly"
             contextId="org.eclipse.ui.contexts.window"
@@ -589,6 +595,12 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+M3+C">
       </key>
+      <!-- Use Cmd+Opt+Ctl+C on mac -->
+      <sequenceModifier
+            find="M1+M2+M3+C"
+            replace="M1+M3+M4+C"
+            platforms="cocoa,carbon">
+      </sequenceModifier>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
