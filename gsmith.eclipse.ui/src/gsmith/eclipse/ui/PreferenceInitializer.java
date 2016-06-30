@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
     @Override
     public void initializeDefaultPreferences() {
-        IEclipsePreferences prefs = new DefaultScope().getNode(UIActivator.PLUGIN_ID);
+        IEclipsePreferences prefs = DefaultScope.INSTANCE.getNode(UIActivator.PLUGIN_ID);
         prefs.putBoolean(WindowSize.TOP_LEFT_PREF_KEY, false);
     }
 }

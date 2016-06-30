@@ -23,7 +23,7 @@ public class ImageDataEditorInput implements IEditorInput, IAdaptable {
 
     /**
      * Constructor.
-     * 
+     *
      * @param imageData
      *            the image data (required).
      * @param name
@@ -46,7 +46,7 @@ public class ImageDataEditorInput implements IEditorInput, IAdaptable {
     /**
      * Constructor. This will use the default icon and use the name of the tool
      * tip text.
-     * 
+     *
      * @param imageData
      *            the image data (required).
      * @param name
@@ -57,9 +57,9 @@ public class ImageDataEditorInput implements IEditorInput, IAdaptable {
     }
 
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == ImageData.class) {
-            return imageData;
+            return adapter.cast(imageData);
         }
 
         return Platform.getAdapterManager().getAdapter(this, adapter);

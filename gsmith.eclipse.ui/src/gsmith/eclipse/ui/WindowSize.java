@@ -41,13 +41,13 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     /**
      * Get the preferences node that stores the configured sizes.
-     * 
+     *
      * @param create
      *            true to always create, false to not create if doesn't exist.
      * @return the preferences, or null if create is false and doesn't exist.
      */
     private static Preferences getPreferencesNode(boolean create) {
-        IEclipsePreferences pluginPrefs = new InstanceScope().getNode(UIActivator.PLUGIN_ID);
+        IEclipsePreferences pluginPrefs = InstanceScope.INSTANCE.getNode(UIActivator.PLUGIN_ID);
         try {
             if (create || pluginPrefs.nodeExists(SIZE_PREFS_PATH)) {
                 return pluginPrefs.node(SIZE_PREFS_PATH);
@@ -60,7 +60,7 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     /**
      * Load the default sizes from the preferences, if available.
-     * 
+     *
      * @return the sizes, or null if not available in the preferences (i.e. use
      *         defaults).
      */
@@ -90,7 +90,7 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     /**
      * Get the default window sizes to offer.
-     * 
+     *
      * @return array of { width, height }.
      */
     // REVIEWME: cache the windowsizes? Seems pretty snappy right now, so let's
@@ -107,7 +107,7 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     /**
      * Set the default window sizes to offer.
-     * 
+     *
      * @param sizes
      *            the list, or null to reset to the defaults.
      */
@@ -134,7 +134,7 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     /**
      * Set the default window sizes to offer.
-     * 
+     *
      * @param sizes
      *            the list, or null to reset to the defaults.
      */
@@ -202,7 +202,7 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     /**
      * Parse a string, as from {@link #toString()}.
-     * 
+     *
      * @return the WindowSize object, or null if the string isn't valid.
      */
     public static WindowSize valueOf(String s) {
@@ -232,17 +232,22 @@ public final class WindowSize implements Comparable<WindowSize> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         WindowSize other = (WindowSize)obj;
-        if (height != other.height)
+        if (height != other.height) {
             return false;
-        if (width != other.width)
+        }
+        if (width != other.width) {
             return false;
+        }
         return true;
     }
 

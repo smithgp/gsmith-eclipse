@@ -27,21 +27,19 @@ public class IEditorPartAdapterFactory implements IAdapterFactory {
     };
 
     @Override
-    public Object getAdapter(final Object adaptableObject,
-            @SuppressWarnings("rawtypes") Class adapterType) {
+    public <T> T getAdapter(final Object adaptableObject, Class<T> adapterType) {
         if (adaptableObject instanceof IEditorPart) {
             // do these on the editor part
             if (adapterType == IIterable.class) {
-                return new IIterable() {
-                    @SuppressWarnings("rawtypes")
+                return adapterType.cast(new IIterable<IEditorPart>() {
                     @Override
-                    public Iterator iterator() {
-                        return Collections.singleton(adaptableObject).iterator();
+                    public Iterator<IEditorPart> iterator() {
+                        return Collections.singleton((IEditorPart)adaptableObject).iterator();
                     }
-                };
+                });
             }
             else if (adapterType == ICountable.class) {
-                return COUNT_1;
+                return adapterType.cast(COUNT_1);
             }
 
             // otherwise, we're doing something on the editor input
