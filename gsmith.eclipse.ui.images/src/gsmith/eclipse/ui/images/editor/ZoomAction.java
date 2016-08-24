@@ -13,8 +13,7 @@ public abstract class ZoomAction extends ActionDelegate implements IEditorAction
 
     @Override
     public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-        currentEditor = targetEditor instanceof ImageViewer ? (ImageViewer)targetEditor
-                : null;
+        currentEditor = targetEditor instanceof ImageViewer ? (ImageViewer)targetEditor : null;
         action.setEnabled(currentEditor != null);
     }
 

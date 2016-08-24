@@ -15,14 +15,10 @@ public class TouchFileCommandHandler extends BaseFileCommandHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IFile f = getSelectedFile(event);
         if (f != null) {
-            UIJob job = new UIJob(MessageFormat.format(
-                    Messages.TouchFileCommandHandler_touchJobName,
-                    f.getFullPath())) {
+            UIJob job = new UIJob(MessageFormat.format(Messages.TouchFileCommandHandler_touchJobName, f.getFullPath())) {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor) {
                     try {
-                        // System.out.println("#!#! Touching " +
-                        // f.getFullPath());
                         f.touch(monitor);
                         return Status.OK_STATUS;
                     }

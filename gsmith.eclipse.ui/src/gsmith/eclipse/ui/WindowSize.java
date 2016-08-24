@@ -33,10 +33,12 @@ public final class WindowSize implements Comparable<WindowSize> {
      * The default default sizes.
      */
     private static final WindowSize[] DEFAULT_SIZES = {
-            // new WindowSize(800, 600), // no one uses this
-            new WindowSize(1024, 768), new WindowSize(1280, 1024),
-            new WindowSize(1440, 900), new WindowSize(1600, 1050),
-            new WindowSize(1600, 1200), new WindowSize(1920, 1200)
+            new WindowSize(1024, 768),
+            new WindowSize(1280, 1024),
+            new WindowSize(1440, 900),
+            new WindowSize(1600, 1050),
+            new WindowSize(1600, 1200),
+            new WindowSize(1920, 1200)
     };
 
     /**
@@ -68,10 +70,9 @@ public final class WindowSize implements Comparable<WindowSize> {
         Preferences prefs = getPreferencesNode(false);
         if (prefs != null) {
             try {
-                Collection<WindowSize> l = new HashSet<WindowSize>();
+                Collection<WindowSize> l = new HashSet<>();
                 for (String key : prefs.keys()) {
-                    if (key.startsWith("size")) //$NON-NLS-1$
-                    {
+                    if (key.startsWith("size")) { //$NON-NLS-1$
                         String val = prefs.get(key, null);
                         WindowSize s = WindowSize.valueOf(val);
                         if (s != null) {
@@ -146,8 +147,7 @@ public final class WindowSize implements Comparable<WindowSize> {
      * Add a new default window size.
      */
     public static void addDefaultSize(WindowSize size) {
-        Collection<WindowSize> sizes = new ArrayList<WindowSize>(
-                Arrays.asList(getDefaultSizes()));
+        Collection<WindowSize> sizes = new ArrayList<>(Arrays.asList(getDefaultSizes()));
         if (!sizes.contains(size)) {
             sizes.add(size);
             setDefaultSizes(sizes);
@@ -158,16 +158,14 @@ public final class WindowSize implements Comparable<WindowSize> {
      * Get the state for putting the window in the top-left corner.
      */
     public static boolean getTopLeftCorner() {
-        return UIActivator.getDefault().getPreferenceStore().getBoolean(
-                TOP_LEFT_PREF_KEY);
+        return UIActivator.getDefault().getPreferenceStore().getBoolean(TOP_LEFT_PREF_KEY);
     }
 
     /**
      * Get the state for putting the window in the top-left corner.
      */
     public static void setTopLeftCorner(boolean b) {
-        UIActivator.getDefault().getPreferenceStore().setValue(
-                TOP_LEFT_PREF_KEY, b);
+        UIActivator.getDefault().getPreferenceStore().setValue(TOP_LEFT_PREF_KEY, b);
     }
 
     /**

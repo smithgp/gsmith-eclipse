@@ -38,9 +38,7 @@ public class ImageDataEditorInput implements IEditorInput, IAdaptable {
         this.imageData = imageData;
         this.name = name;
         this.toolTipText = toolTipText;
-        this.icon = icon != null ? icon
-                : ImagesActivator.imageDescriptorFromPlugin(
-                        ImagesActivator.PLUGIN_ID, "icons/image.png"); //$NON-NLS-1$
+        this.icon = icon != null ? icon : ImagesActivator.imageDescriptorFromPlugin(ImagesActivator.PLUGIN_ID, "icons/image.png"); //$NON-NLS-1$
     }
 
     /**

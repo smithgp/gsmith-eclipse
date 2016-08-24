@@ -8,7 +8,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -43,7 +42,7 @@ public class CopySelectionCommandHandler extends AbstractHandler {
     /**
      * Execute the command. This will get the text from the workbench selection,
      * and send it to the scratch pad view.
-     * 
+     *
      * @see #getTextForSelection(ISelection)
      * @see ScratchPadView#insertText(String)
      */
@@ -53,12 +52,10 @@ public class CopySelectionCommandHandler extends AbstractHandler {
 
         String text = selection != null ? getTextForSelection(selection) : null;
         if (text != null) {
-            IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindowChecked(
-                    event).getActivePage();
+            IWorkbenchPage page = HandlerUtil.getActiveWorkbenchWindowChecked(event).getActivePage();
             try {
                 // show the scratch, but don't automatically give it focus
-                IViewPart view = page.showView(ScratchPadView.ID, null,
-                        IWorkbenchPage.VIEW_VISIBLE);
+                IViewPart view = page.showView(ScratchPadView.ID, null, IWorkbenchPage.VIEW_VISIBLE);
                 ((ScratchPadView)view).insertText(text);
             }
             catch (PartInitException ex) {
@@ -72,8 +69,7 @@ public class CopySelectionCommandHandler extends AbstractHandler {
     /**
      * Represents a converter loaded from the extension point.
      */
-    private static class WrappedTextConverter implements
-            IScratchPadTextConverter {
+    private static class WrappedTextConverter implements IScratchPadTextConverter {
         private IConfigurationElement element;
         private int priority = 100;
 
@@ -86,15 +82,15 @@ public class CopySelectionCommandHandler extends AbstractHandler {
          * Factory. This should be used, since it checks for valid elements.
          */
         private static WrappedTextConverter create(IConfigurationElement element) {
-            if (element.getAttribute("class") == null) //$NON-NLS-1$
-            {
+            if (element.getAttribute("class") == null) { //$NON-NLS-1$
                 UIActivator.log(
                         UIActivator.getDefault(),
                         IStatus.WARNING,
                         MessageFormat.format(
                                 Messages.CopySelectionCommandHandler_missingClassAttribute,
                                 element.getDeclaringExtension().getNamespaceIdentifier(),
-                                element.getNamespaceIdentifier()), null);
+                                element.getNamespaceIdentifier()),
+                        null);
                 return null;
             }
             return new WrappedTextConverter(element);
@@ -116,8 +112,7 @@ public class CopySelectionCommandHandler extends AbstractHandler {
          * Load the delegate converter from the extension.
          */
         private IScratchPadTextConverter getDelegate() {
-            IScratchPadTextConverter d = delegate != null ? delegate.get()
-                    : null;
+            IScratchPadTextConverter d = delegate != null ? delegate.get() : null;
             if (d == null) {
                 // try loading only once (if it fails, don't try again), and
                 // if the element is still valid
@@ -128,9 +123,8 @@ public class CopySelectionCommandHandler extends AbstractHandler {
                             delegate.clear();
                         }
                         // save it in a SoftReference so it can go away if the
-                        // classloader is released (e.g. the bundle is
-                        // unloaded).
-                        delegate = new SoftReference<IScratchPadTextConverter>(d);
+                        // classloader is released (e.g. the bundle is unloaded).
+                        delegate = new SoftReference<>(d);
                     }
                     catch (Exception ex) {
                         delegateLoadFailed = true;
@@ -141,7 +135,8 @@ public class CopySelectionCommandHandler extends AbstractHandler {
                                 MessageFormat.format(
                                         Messages.CopySelectionCommandHandler_unableToLoadConverter,
                                         element.getAttribute("class"), //$NON-NLS-1$
-                                        element.getNamespaceIdentifier()), ex);
+                                        element.getNamespaceIdentifier()),
+                                ex);
                     }
                 }
             }
@@ -154,8 +149,7 @@ public class CopySelectionCommandHandler extends AbstractHandler {
         private Expression getEnablement() {
             // try to load it only once, and make sure the element is still
             // valid
-            if (enablement == null && !enablementLoadFailed &&
-                    element.isValid()) {
+            if (enablement == null && !enablementLoadFailed && element.isValid()) {
                 IConfigurationElement[] kids = element.getChildren("enablement"); //$NON-NLS-1$
                 if (kids != null && kids.length > 0) {
                     try {
@@ -169,7 +163,8 @@ public class CopySelectionCommandHandler extends AbstractHandler {
                                 IStatus.WARNING,
                                 MessageFormat.format(
                                         Messages.CopySelectionCommandHandler_uanbleToLoadEnablement,
-                                        element.getContributor().getName()), ex);
+                                        element.getContributor().getName()),
+                                ex);
                     }
                 }
                 else {
@@ -208,7 +203,8 @@ public class CopySelectionCommandHandler extends AbstractHandler {
                             IStatus.WARNING,
                             MessageFormat.format(
                                     Messages.CopySelectionCommandHandler_evalEnablementFailed,
-                                    element.getNamespaceIdentifier()), ex);
+                                    element.getNamespaceIdentifier()),
+                            ex);
                     return false;
                 }
             }
@@ -231,7 +227,6 @@ public class CopySelectionCommandHandler extends AbstractHandler {
             StringBuilder buf = new StringBuilder(getClass().getName());
             buf.append("[class=").append(element.getAttribute("class")); //$NON-NLS-1$ //$NON-NLS-2$
             buf.append(",priority=").append(priority); //$NON-NLS-1$
-
             return buf.append(']').toString();
         }
     }
@@ -242,7 +237,7 @@ public class CopySelectionCommandHandler extends AbstractHandler {
         if (converters == null) {
             // TODO: listen to registry changes to reload extensions
 
-            List<WrappedTextConverter> l = new ArrayList<WrappedTextConverter>();
+            List<WrappedTextConverter> l = new ArrayList<>();
 
             // load the extensions
             IExtensionRegistry reg = Platform.getExtensionRegistry();
@@ -253,8 +248,7 @@ public class CopySelectionCommandHandler extends AbstractHandler {
                     IConfigurationElement[] elements = ext.getConfigurationElements();
                     if (elements != null) {
                         for (IConfigurationElement element : elements) {
-                            if ("converter".equals(element.getName())) //$NON-NLS-1$
-                            {
+                            if ("converter".equals(element.getName())) { //$NON-NLS-1$
                                 WrappedTextConverter c = WrappedTextConverter.create(element);
                                 if (c != null) {
                                     l.add(c);
@@ -266,16 +260,9 @@ public class CopySelectionCommandHandler extends AbstractHandler {
             }
 
             // sort by priority
-            Collections.sort(l, new Comparator<WrappedTextConverter>() {
-                @Override
-                public int compare(WrappedTextConverter o1, WrappedTextConverter o2) {
-                    // higher first
-                    return o2.priority - o1.priority;
-                }
-            });
+            Collections.sort(l, (o1, o2) -> o2.priority - o1.priority);
 
             converters = Collections.unmodifiableCollection(l);
-            // System.out.println("#!#! converters=" + converters);
         }
 
         return converters;
@@ -283,11 +270,11 @@ public class CopySelectionCommandHandler extends AbstractHandler {
 
     /**
      * Get the scratch pad text for the specified selection.
-     * 
+     *
      * @return the text, or null if none can be computed.
      */
     public static String getTextForSelection(ISelection origSelection) {
-        Object[] selections = null;
+        Object[] selections;
         // support multiple selections
         if (origSelection instanceof IStructuredSelection) {
             selections = ((IStructuredSelection)origSelection).toArray();

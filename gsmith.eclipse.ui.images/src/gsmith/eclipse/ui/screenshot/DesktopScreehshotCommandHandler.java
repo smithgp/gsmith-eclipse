@@ -14,8 +14,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class DesktopScreehshotCommandHandler extends ScreenshotCommandHandler {
     @Override
-    protected ImageData getScreenshotImage(ExecutionEvent event)
-            throws ExecutionException {
+    protected ImageData getScreenshotImage(ExecutionEvent event) throws ExecutionException {
         Shell shell = HandlerUtil.getActiveShellChecked(event);
         Display display = shell.getDisplay();
         GC gc = new GC(display);
@@ -53,11 +52,7 @@ public class DesktopScreehshotCommandHandler extends ScreenshotCommandHandler {
                 return super.getScreenshotImage(event);
             }
             finally {
-                shell.getDisplay().asyncExec(new Runnable() {
-                    public void run() {
-                        shell.setVisible(true);
-                    }
-                });
+                shell.getDisplay().asyncExec(() -> shell.setVisible(true));
             }
         }
     }

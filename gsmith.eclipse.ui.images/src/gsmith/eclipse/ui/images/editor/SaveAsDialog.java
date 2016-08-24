@@ -14,7 +14,7 @@ public class SaveAsDialog extends org.eclipse.ui.dialogs.SaveAsDialog {
 
     /**
      * Creates a new Save As dialog for no specific file.
-     * 
+     *
      * @param parentShell
      *            the parent shell
      */
@@ -29,8 +29,7 @@ public class SaveAsDialog extends org.eclipse.ui.dialogs.SaveAsDialog {
      * field and class not being public or protected, or otherwise supporting
      * methods to manipulate the UI programatically.
      */
-    protected static synchronized ResourceAndContainerGroup getResourceGroup(
-            SaveAsDialog d) {
+    protected static synchronized ResourceAndContainerGroup getResourceGroup(SaveAsDialog d) {
         boolean origAccessible = false;
         try {
             // cache it to avoid unneccessary reflection look ups
@@ -56,7 +55,7 @@ public class SaveAsDialog extends org.eclipse.ui.dialogs.SaveAsDialog {
     /**
      * Returns the current file name as entered by the user, or its anticipated
      * initial value.
-     * 
+     *
      * @return the file name, its anticipated initial value, or
      *         <code>null</code> if no file name is known
      */

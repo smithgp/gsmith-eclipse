@@ -36,8 +36,7 @@ public abstract class ScreenshotCommandHandler extends AbstractHandler {
     /**
      * Return the image data of the screenshot, or null for none.
      */
-    protected abstract ImageData getScreenshotImage(ExecutionEvent event)
-            throws ExecutionException;
+    protected abstract ImageData getScreenshotImage(ExecutionEvent event) throws ExecutionException;
 
     /**
      * Handle the image data. This implementation will open an ImageViewer on

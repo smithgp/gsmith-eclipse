@@ -79,9 +79,8 @@ public class ScratchPadTheme implements IThemePreview {
     @Override
     public void createControl(Composite parent, final ITheme theme) {
         this.currentTheme = theme;
-        final StyledText text = new StyledText(parent, SWT.READ_ONLY |
-                SWT.FULL_SELECTION | SWT.MULTI | SWT.WRAP | SWT.BORDER |
-                SWT.H_SCROLL | SWT.V_SCROLL);
+        final StyledText text = new StyledText(parent,
+                SWT.READ_ONLY | SWT.FULL_SELECTION | SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         applyColorsAndFonts(text, theme);
         text.setText(MessageFormat.format(Messages.ScratchPadTheme_previewText,
                 getFontDescription(text.getFont())));

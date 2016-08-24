@@ -26,11 +26,13 @@ public class UIActivator extends AbstractUIPlugin {
     // The shared instance
     private static UIActivator plugin;
 
+    @Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
     }
 
+    @Override
     public void stop(BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
@@ -100,10 +102,8 @@ public class UIActivator extends AbstractUIPlugin {
     /**
      * Log a message with the given plugin.
      */
-    public static void log(Plugin plugin, int severity, String mesg,
-            Throwable ex) {
-        IStatus st = new Status(severity, plugin.getBundle().getSymbolicName(),
-                mesg, ex);
+    public static void log(Plugin plugin, int severity, String mesg, Throwable ex) {
+        IStatus st = new Status(severity, plugin.getBundle().getSymbolicName(), mesg, ex);
         plugin.getLog().log(st);
     }
 
@@ -118,7 +118,7 @@ public class UIActivator extends AbstractUIPlugin {
     /**
      * Adapt the specific object to the specified classes, supporting the
      * IAdaptable interface as well.
-     * 
+     *
      * @param o
      *            the object.
      * @param actualType
@@ -126,8 +126,7 @@ public class UIActivator extends AbstractUIPlugin {
      * @param adapterType
      *            the adapter type to check for.
      */
-    public static <T> T adaptTo(Object o, Class<T> actualType,
-            Class<?> adapterType) {
+    public static <T> T adaptTo(Object o, Class<T> actualType, Class<?> adapterType) {
         if (actualType.isInstance(o)) {
             return actualType.cast(o);
         }

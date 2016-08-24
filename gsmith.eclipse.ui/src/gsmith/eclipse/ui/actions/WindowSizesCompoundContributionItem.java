@@ -37,13 +37,13 @@ public class WindowSizesCompoundContributionItem extends CompoundContributionIte
             // separator
             items[i++] = new Separator();
         }
-        // use the command to do a user-prompt
+        // add the command to do a user-prompt
         CommandContributionItemParameter commandParm = new CommandContributionItemParameter(
                 shell, null, WINDOW_SIZE_COMMAND_ID,
                 CommandContributionItem.STYLE_PUSH);
         // but fix the label for the menu
         commandParm.label = Messages.WindowSizesCompoundContributionItem_customSizeActionLabel;
-        items[i++] = new CommandContributionItem(commandParm);
+        items[i] = new CommandContributionItem(commandParm);
 
         return items;
     }

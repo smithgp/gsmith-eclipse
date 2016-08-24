@@ -38,7 +38,7 @@ public class SetWindowSizeAction extends Action {
 
     /**
      * Appropriately resize the specified window.
-     * 
+     *
      * @param shell
      *            the window.
      * @param width
@@ -48,8 +48,7 @@ public class SetWindowSizeAction extends Action {
      * @param topLeftCorner
      *            true to always put the window in the top-left corner.
      */
-    public static void resize(Shell shell, int width, int height,
-            boolean topLeftCorner) {
+    public static void resize(Shell shell, int width, int height, boolean topLeftCorner) {
         if (shell != null) {
             Rectangle cur = shell.getBounds();
             Rectangle monitor = shell.getMonitor().getBounds();
@@ -57,10 +56,8 @@ public class SetWindowSizeAction extends Action {
             if (cur.width == width &&
                 cur.height == height &&
                 (!topLeftCorner || (cur.x == monitor.x && cur.y == monitor.y))) {
-                // System.out.println("#!#! Skipping resize/move");
                 return;
             }
-            // System.out.println("#!#! resizing or moving");
             int x = cur.x;
             int y = cur.y;
             int wd = width;

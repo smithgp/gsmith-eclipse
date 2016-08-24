@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.swt.custom.ExtendedModifyEvent;
 import org.eclipse.swt.custom.ExtendedModifyListener;
 import org.eclipse.swt.custom.StyledText;
 
@@ -42,7 +41,7 @@ public class StyledTextUndoManager {
 
     /**
      * Attached undo manager.
-     * 
+     *
      * @param textArea
      *            the StyledText.
      * @param maxUndo
@@ -76,7 +75,7 @@ public class StyledTextUndoManager {
 
     /**
      * Attached to the specified StyledText.
-     * 
+     *
      * @param textArea
      *            the StyledText.
      * @param maxUndo
@@ -95,57 +94,47 @@ public class StyledTextUndoManager {
         history.setLimit(undoContext, maxUndo);
         history.dispose(undoContext, true, true, false);
 
-        modifyListener = new ExtendedModifyListener() {
-            @Override
-            public void modifyText(ExtendedModifyEvent event) {
-                if (!inUndo) {
-                    // the start index of the edit
-                    final int start = event.start;
-                    // the new text
-                    final String text = textArea.getTextRange(event.start,
-                            event.length);
-                    // the old text being replaced
-                    final String oldText = event.replacedText;
-                    IUndoableOperation op = new AbstractOperation(
-                            Messages.StyledTextUndoManager_opLabel) {
-                        @Override
-                        public IStatus undo(IProgressMonitor monitor,
-                                IAdaptable info) {
-                            inUndo = true;
-                            try {
-                                textArea.replaceTextRange(start, text.length(),
-                                        oldText);
-                            }
-                            finally {
-                                inUndo = false;
-                            }
-                            return Status.OK_STATUS;
+        modifyListener = event -> {
+            if (!inUndo) {
+                // the start index of the edit
+                final int start = event.start;
+                // the new text
+                final String text = textArea.getTextRange(event.start, event.length);
+                // the old text being replaced
+                final String oldText = event.replacedText;
+                IUndoableOperation op = new AbstractOperation(Messages.StyledTextUndoManager_opLabel) {
+                    @Override
+                    public IStatus undo(IProgressMonitor monitor, IAdaptable info) {
+                        inUndo = true;
+                        try {
+                            textArea.replaceTextRange(start, text.length(), oldText);
                         }
+                        finally {
+                            inUndo = false;
+                        }
+                        return Status.OK_STATUS;
+                    }
 
-                        @Override
-                        public IStatus redo(IProgressMonitor monitor,
-                                IAdaptable info) {
-                            inUndo = true;
-                            try {
-                                textArea.replaceTextRange(start,
-                                        oldText.length(), text);
-                            }
-                            finally {
-                                inUndo = false;
-                            }
-                            return Status.OK_STATUS;
+                    @Override
+                    public IStatus redo(IProgressMonitor monitor, IAdaptable info) {
+                        inUndo = true;
+                        try {
+                            textArea.replaceTextRange(start, oldText.length(), text);
                         }
+                        finally {
+                            inUndo = false;
+                        }
+                        return Status.OK_STATUS;
+                    }
 
-                        @Override
-                        public IStatus execute(IProgressMonitor monitor,
-                                IAdaptable info) {
-                            return Status.OK_STATUS;
-                        }
-                    };
-                    op.addContext(undoContext);
-                    history.add(op);
-                    operationsChanged();
-                }
+                    @Override
+                    public IStatus execute(IProgressMonitor monitor, IAdaptable info) {
+                        return Status.OK_STATUS;
+                    }
+                };
+                op.addContext(undoContext);
+                history.add(op);
+                operationsChanged();
             }
         };
         this.textArea.addExtendedModifyListener(modifyListener);
@@ -182,7 +171,7 @@ public class StyledTextUndoManager {
 
     /**
      * Undo the last change.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if not attached.
      */
@@ -191,7 +180,7 @@ public class StyledTextUndoManager {
         try {
             history.undo(undoContext, new NullProgressMonitor(), null);
         }
-        catch (ExecutionException ex) {
+        catch (ExecutionException ignore) {
         }
         finally {
             operationsChanged();
@@ -200,7 +189,7 @@ public class StyledTextUndoManager {
 
     /**
      * Returns if there is a last operation to undo.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if not attached.
      */
@@ -211,7 +200,7 @@ public class StyledTextUndoManager {
 
     /**
      * Redo the last change.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if not attached.
      */
@@ -220,7 +209,7 @@ public class StyledTextUndoManager {
         try {
             history.redo(undoContext, new NullProgressMonitor(), null);
         }
-        catch (ExecutionException ex) {
+        catch (ExecutionException ignore) {
         }
         finally {
             operationsChanged();
@@ -229,7 +218,7 @@ public class StyledTextUndoManager {
 
     /**
      * Returns if there is a last operation to redo.
-     * 
+     *
      * @throws IllegalArgumentException
      *             if not attached.
      */

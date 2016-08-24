@@ -26,12 +26,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 /**
  * Base class for our file commands.
  */
-public abstract class BaseFileCommandHandler extends AbstractHandler implements
-        IExecutableExtension {
+public abstract class BaseFileCommandHandler extends AbstractHandler implements IExecutableExtension {
     /**
      * The places from which to try to get an IFile.
      */
-    protected static enum FileGettingType {
+    protected enum FileGettingType {
         /**
          * Look in the selection.
          */
@@ -56,7 +55,7 @@ public abstract class BaseFileCommandHandler extends AbstractHandler implements
          * Look in the editor the menus.
          */
         MENU_EDITOR
-    };
+    }
 
     private Collection<FileGettingType> howToGet = null;
 
@@ -78,12 +77,11 @@ public abstract class BaseFileCommandHandler extends AbstractHandler implements
      * Get the file from the execution context, using the
      * {@link #getFileGettingTypes() control}.
      */
-    protected IFile getSelectedFile(ExecutionEvent event)
-            throws ExecutionException {
+    protected IFile getSelectedFile(ExecutionEvent event) throws ExecutionException {
         // default behavior is to use the workbench's active editor (if it's the
         // active part)
-        Collection<FileGettingType> howToGet = getFileGettingTypes();
-        if (howToGet == null || howToGet.isEmpty()) {
+        Collection<FileGettingType> types = getFileGettingTypes();
+        if (types == null || types.isEmpty()) {
             IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (editor != null && editor.getEditorInput() != null &&
                     editor.equals(editor.getSite().getPage().getActivePart())) {
@@ -94,16 +92,12 @@ public abstract class BaseFileCommandHandler extends AbstractHandler implements
             }
             return null;
         }
-        for (FileGettingType type : howToGet) {
-            // System.out.println("#!#! (" + type + ") Checking...");
+        for (FileGettingType type : types) {
             IFile f = getSelectionFile(event, type);
             if (f != null) {
-                // System.out.println("#!#! (" + type + " found: " +
-                // f.getFullPath());
                 return f;
             }
         }
-        // System.out.println("#!#! Didn't find file");
         return null;
     }
 
@@ -111,15 +105,12 @@ public abstract class BaseFileCommandHandler extends AbstractHandler implements
      * Try to get the selected file, according to the type.
      */
     // REVIEWME: move to a method on the FileGettingType enum
-    private IFile getSelectionFile(ExecutionEvent event, FileGettingType type)
-            throws ExecutionException {
+    private IFile getSelectionFile(ExecutionEvent event, FileGettingType type) throws ExecutionException {
         switch (type) {
-            case SELECTION: {
+            case SELECTION:
                 return getFile(HandlerUtil.getCurrentSelection(event));
-            }
-            case EDITOR_INPUT: {
-                Object input = HandlerUtil.getVariable(event,
-                        ISources.ACTIVE_EDITOR_INPUT_NAME);
+            case EDITOR_INPUT:
+                Object input = HandlerUtil.getVariable(event, ISources.ACTIVE_EDITOR_INPUT_NAME);
                 if (input instanceof IEditorInput) {
                     Object o = ((IEditorInput)input).getAdapter(IResource.class);
                     if (o instanceof IFile) {
@@ -127,24 +118,19 @@ public abstract class BaseFileCommandHandler extends AbstractHandler implements
                     }
                 }
                 break;
-            }
-            case EDITOR: {
+            case EDITOR:
                 IEditorPart editor = HandlerUtil.getActiveEditor(event);
                 if (editor != null && editor.getEditorInput() != null) {
-                    Object o = editor.getEditorInput().getAdapter(
-                            IResource.class);
+                    Object o = editor.getEditorInput().getAdapter(IResource.class);
                     if (o instanceof IFile) {
                         return (IFile)o;
                     }
                 }
                 break;
-            }
-            case MENU_EDITOR: {
+            case MENU_EDITOR:
                 return getFile(HandlerUtil.getActiveMenuEditorInput(event));
-            }
-            case MENU_SELECTION: {
+            case MENU_SELECTION:
                 return getFile(HandlerUtil.getActiveMenuSelection(event));
-            }
         }
         return null;
     }
@@ -166,32 +152,29 @@ public abstract class BaseFileCommandHandler extends AbstractHandler implements
      * file.
      */
     @Override
-    public void setInitializationData(IConfigurationElement config,
-            String propertyName, Object data) throws CoreException {
-        if (data instanceof String) {
-            if (data.toString().trim().length() >= 0) {
-                // EnumSet doesn't maintain add() order -- it uses a bit buffer
-                // based on the enum ordinals, so iterator() returns in the
-                // order of the enum value declarations.
-                // Use an ordered collection instead
-                Set<FileGettingType> howToGet = new LinkedHashSet<FileGettingType>();// EnumSet.noneOf(FileGettingType.class);
-                StringTokenizer toker = new StringTokenizer(data.toString(), ","); //$NON-NLS-1$
-                while (toker.hasMoreTokens()) {
-                    String token = toker.nextToken().trim();
-                    try {
-                        FileGettingType value = FileGettingType.valueOf(token.toUpperCase());
-                        if (value != null) {
-                            howToGet.add(value);
-                        }
-                    }
-                    catch (IllegalArgumentException ignore) {
-                        // ex.printStackTrace();
+    public void setInitializationData(IConfigurationElement config, String propertyName, Object data)
+            throws CoreException {
+        if (data instanceof String && data.toString().trim().length() >= 0) {
+            // EnumSet doesn't maintain add() order -- it uses a bit buffer
+            // based on the enum ordinals, so iterator() returns in the
+            // order of the enum value declarations.
+            // Use an ordered collection instead
+            Set<FileGettingType> types = new LinkedHashSet<>();
+            StringTokenizer toker = new StringTokenizer(data.toString(), ","); //$NON-NLS-1$
+            while (toker.hasMoreTokens()) {
+                String token = toker.nextToken().trim();
+                try {
+                    FileGettingType value = FileGettingType.valueOf(token.toUpperCase());
+                    if (value != null) {
+                        types.add(value);
                     }
                 }
-                // only set if we found some valid directives
-                if (!howToGet.isEmpty()) {
-                    setFileGettingTypes(howToGet);
+                catch (IllegalArgumentException ignore) {
                 }
+            }
+            // only set if we found some valid directives
+            if (!types.isEmpty()) {
+                setFileGettingTypes(types);
             }
         }
     }

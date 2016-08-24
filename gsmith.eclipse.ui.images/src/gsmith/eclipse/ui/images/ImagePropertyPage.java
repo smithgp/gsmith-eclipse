@@ -61,17 +61,13 @@ public class ImagePropertyPage extends PropertyPage implements IWorkbenchPropert
 
         // width, height, type
         createLabelAndText(main, Messages.ImagePropertyPage_widthLabel,
-                MessageFormat.format(Messages.ImagePropertyPage_widthText,
-                        numFormat.format(imageData.width)));
+                MessageFormat.format(Messages.ImagePropertyPage_widthText, numFormat.format(imageData.width)));
         createLabelAndText(main, Messages.ImagePropertyPage_heightLabel,
-                MessageFormat.format(Messages.ImagePropertyPage_heightText,
-                        numFormat.format(imageData.height)));
-        createLabelAndText(main, Messages.ImagePropertyPage_imageTypeLabel,
-                getImageFormatLabel(imageData.type));
+                MessageFormat.format(Messages.ImagePropertyPage_heightText, numFormat.format(imageData.height)));
+        createLabelAndText(main, Messages.ImagePropertyPage_imageTypeLabel, getImageFormatLabel(imageData.type));
         // raw byte size (from data.length)?
         createLabelAndText(main, Messages.ImagePropertyPage_imageSizeLabel,
-                MessageFormat.format(Messages.ImagePropertyPage_imageSizeText,
-                        numFormat.format(imageData.data.length)));
+                MessageFormat.format(Messages.ImagePropertyPage_imageSizeText, numFormat.format(imageData.data.length)));
 
         Label sep = new Label(main, SWT.SEPARATOR | SWT.HORIZONTAL);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -79,8 +75,7 @@ public class ImagePropertyPage extends PropertyPage implements IWorkbenchPropert
         sep.setLayoutData(gd);
 
         // depth
-        createLabelAndText(main, Messages.ImagePropertyPage_colorDepthLabel,
-                numFormat.format(imageData.depth));
+        createLabelAndText(main, Messages.ImagePropertyPage_colorDepthLabel, numFormat.format(imageData.depth));
 
         // transparent (from transparentPixel/alpha/alphaData)
         if (imageData.transparentPixel >= 0 && imageData.palette != null) {
@@ -103,7 +98,7 @@ public class ImagePropertyPage extends PropertyPage implements IWorkbenchPropert
         else {
             // show this as a % since it's global
             if (imageData.alpha >= 0 && imageData.alpha <= 255) {
-                int pct = (int)Math.round(100.0d * ((double)imageData.alpha / 255.0d));
+                int pct = (int)Math.round(100.0d * (imageData.alpha / 255.0d));
                 createLabelAndText(
                         main,
                         Messages.ImagePropertyPage_transparencyLabel,
@@ -200,7 +195,6 @@ public class ImagePropertyPage extends PropertyPage implements IWorkbenchPropert
                             if (editor instanceof ImageViewer) {
                                 data = ((ImageViewer)editor).getImageData();
                                 if (data != null) {
-                                    //System.out.println("#!#! Reusing from editor"); //$NON-NLS-1$
                                     break;
                                 }
                             }
@@ -213,7 +207,6 @@ public class ImagePropertyPage extends PropertyPage implements IWorkbenchPropert
                     try {
                         in = f.getContents();
                         data = new ImageData(in);
-                        //System.out.println("#!#! loaded from file"); //$NON-NLS-1$
                     }
                     finally {
                         UIActivator.close(in);

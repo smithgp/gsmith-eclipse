@@ -97,19 +97,18 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
     /**
      * The IFile session property for the last zoom factor.
      */
-    private static final QualifiedName LAST_ZOOM_FACTOR_KEY = new QualifiedName(
-            ImageViewer.class.getName(), PROP_ZOOM_FACTOR);
+    private static final QualifiedName LAST_ZOOM_FACTOR_KEY = new QualifiedName(ImageViewer.class.getName(), PROP_ZOOM_FACTOR);
 
     /**
      * The image we're showing.
-     * 
+     *
      * @see #showImage()
      */
     private Image image;
 
     /**
      * The image data we're showing.
-     * 
+     *
      * @see #loadImageData()
      */
     private ImageData imageData;
@@ -132,7 +131,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
     /**
      * A file listener on our possible file input.
-     * 
+     *
      * @see #registerResourceListener(IEditorInput)
      * @see #unregisterResourceListener(IEditorInput)
      */
@@ -140,7 +139,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
     /**
      * Property change listeners.
-     * 
+     *
      * @see #addPropertyChangeListener(IPropertyChangeListener)
      */
     private ListenerList propChangeListeners = null;
@@ -157,12 +156,9 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
         public void handleEvent(Event event) {
             switch (event.type) {
                 case SWT.MouseDown: // first click
-                {
                     initial = new Point(event.x, event.y);
                     break;
-                }
                 case SWT.MouseMove: // move enough to start it
-                {
                     if (initial == null)
                         return;
                     int deltaX = initial.x - event.x, deltaY = initial.y -
@@ -181,9 +177,8 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
                     // open() will wait until UI is done, so fall through to
                     // the MouseUp done logic
-                }
+                    break;
                 case SWT.MouseUp: // done
-                {
                     initial = null;
                     if (tracker != null) {
                         // TODO: do something with the selection --
@@ -195,17 +190,15 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                         tracker.dispose();
                         tracker = null;
                     }
-                }
+                    break;
             }
         }
     };*/
 
     @Override
-    public void init(IEditorSite site, IEditorInput input)
-            throws PartInitException {
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         // we need either an IStorage or an input that can return an ImageData
-        if (!(input instanceof IStorageEditorInput) &&
-                input.getAdapter(ImageData.class) == null) {
+        if (!(input instanceof IStorageEditorInput) && input.getAdapter(ImageData.class) == null) {
             throw new PartInitException("Unable to read input: " + input); //$NON-NLS-1$
         }
         setSite(site);
@@ -235,12 +228,12 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                             try {
                                 zoomFactor = Double.parseDouble((String)prop);
                             }
-                            catch (NumberFormatException ex) {
+                            catch (NumberFormatException ignore) {
                                 // intentionally blank, fall through
                             }
                         }
                     }
-                    catch (CoreException ex) {
+                    catch (CoreException ignore) {
                         // intentionally blank, fall through
                     }
                 }
@@ -272,7 +265,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
             try {
                 imageName = ((IStorageEditorInput)input).getStorage().getName();
             }
-            catch (CoreException ex) {
+            catch (CoreException ignore) {
                 // intentionally blank
             }
         }
@@ -340,8 +333,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
      */
     @Override
     public void createPartControl(Composite parent) {
-        scroll = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL |
-                SWT.V_SCROLL);
+        scroll = new ScrolledComposite(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         // TODO: fixup scrolling (page) increment as things resize
         scroll.getHorizontalBar().setIncrement(10);
         scroll.getHorizontalBar().setPageIncrement(100);
@@ -356,8 +348,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
             @Override
             public void paintControl(PaintEvent e) {
                 Rectangle bounds = imageCanvas.getBounds();
-                // showImage() should be setting the imageCanvas bounds to the
-                // zoomed size
+                // showImage() should be setting the imageCanvas bounds to the zoomed size
                 if (image != null) {
                     Rectangle imBounds = image.getBounds();
                     e.gc.drawImage(image, 0, 0, imBounds.width,
@@ -403,12 +394,12 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
     /**
      * Convert an imageCanvas location to a pixel point in the image, according
      * to the zoomFactor.
-     * 
+     *
      * @return p, updated.
      */
     private Point convertImageCanvasLocationToPixel(Point p) {
-        p.x = (int)((double)p.x / zoomFactor);
-        p.y = (int)((double)p.y / zoomFactor);
+        p.x = (int)(p.x / zoomFactor);
+        p.y = (int)(p.y / zoomFactor);
         return p;
     }
 
@@ -417,31 +408,25 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
      * This can be started from any thread.
      */
     private void startImageLoad() {
-        // skip if the UI hasn't been initialized yet, because
-        // createPartControl() will do this
+        // skip if the UI hasn't been initialized yet, because createPartControl() will do this
         if (imageCanvas == null) {
             return;
         }
         // clear out the current image
-        Runnable r = new Runnable() {
-            public void run() {
-                if (image != null) {
-                    image.dispose();
-                    imageData = null;
-                    image = null;
-                    imageCanvas.setSize(0, 0);
-                    scroll.redraw();
-                    firePropertyChangeEvent(PROP_CURRENT_IMAGE_INFORMATION,
-                            null, null);
-                    firePartPropertyChanged(PROP_PIXEL_LOCATION, null, null);
-                }
+        imageCanvas.getDisplay().asyncExec(() -> {
+            if (image != null) {
+                image.dispose();
+                imageData = null;
+                image = null;
+                imageCanvas.setSize(0, 0);
+                scroll.redraw();
+                firePropertyChangeEvent(PROP_CURRENT_IMAGE_INFORMATION, null, null);
+                firePartPropertyChanged(PROP_PIXEL_LOCATION, null, null);
             }
-        };
-        imageCanvas.getDisplay().asyncExec(r);
+        });
 
         // load the image in the background to keep the ui fresh
-        Job job = new Job(MessageFormat.format(
-                Messages.ImageViewer_loadImageTask, getPartName())) {
+        Job job = new Job(MessageFormat.format(Messages.ImageViewer_loadImageTask, getPartName())) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 monitor.beginTask(getName(), IProgressMonitor.UNKNOWN);
@@ -449,13 +434,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                     loadImageData();
 
                     // show the image on the next SWT exec
-                    Runnable r = new Runnable() {
-                        @Override
-                        public void run() {
-                            showImage(true);
-                        }
-                    };
-                    imageCanvas.getDisplay().asyncExec(r);
+                    imageCanvas.getDisplay().asyncExec(() -> showImage(true));
 
                     return Status.OK_STATUS;
                 }
@@ -463,8 +442,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                     return ex.getStatus();
                 }
                 catch (SWTException ex) {
-                    return new Status(IStatus.ERROR, UIActivator.PLUGIN_ID,
-                            ex.getMessage());
+                    return new Status(IStatus.ERROR, UIActivator.PLUGIN_ID, ex.getMessage(), ex);
                 }
                 finally {
                     monitor.done();
@@ -509,15 +487,14 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
     /**
      * Refresh the ui to display the current image. This needs to be run in the
      * SWT thread.
-     * 
+     *
      * @param createImage
      *            true to (re)create the image object from the imageData, false
      *            to reuse.
      */
     private void showImage(boolean createImage) {
         if (imageData != null) {
-            imageCanvas.setCursor(imageCanvas.getDisplay().getSystemCursor(
-                    SWT.CURSOR_WAIT));
+            imageCanvas.setCursor(imageCanvas.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
             try {
                 if (createImage || image == null) {
                     // dispose of the old image
@@ -530,22 +507,13 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                 Rectangle imageSize = image.getBounds();
                 // apply the zoomFactor -- imageCanvas' repaint listener will
                 // use the imageCanvas size to do the image dithering
-                imageCanvas.setSize(
-                        (int)((double)imageSize.width * zoomFactor),
-                        (int)((double)imageSize.height * zoomFactor));
+                imageCanvas.setSize((int)(imageSize.width * zoomFactor), (int)(imageSize.height * zoomFactor));
                 scroll.redraw();
-                //double maxZoom = getMaxZoomFactor();
-                //System.out.println("#!#! " + getPartName() + " maxZoom=" +
-                //    maxZoom / 100 + "%");
-                //System.out.println("     maxSize=" + (int)(imageData.width *
-                //    maxZoom) + "x" +
-                //    (int)(imageData.height * maxZoom));
             }
             finally {
                 imageCanvas.setCursor(null);
             }
-            firePropertyChangeEvent(PROP_CURRENT_IMAGE_INFORMATION, null,
-                    getCurrentImageInformation());
+            firePropertyChangeEvent(PROP_CURRENT_IMAGE_INFORMATION, null, getCurrentImageInformation());
             // clear this out, it'll update on the next mouse move
             firePropertyChangeEvent(PROP_PIXEL_LOCATION, null, null);
         }
@@ -580,6 +548,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
     @Override
     public void doSave(IProgressMonitor monitor) {
+        // we don't support any editing in this editor, so save does nothing
     }
 
     @Override
@@ -625,18 +594,16 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
         // create a scheduling rule for the file edit/creation
         IResourceRuleFactory ruleFactory = dest.getWorkspace().getRuleFactory();
-        ISchedulingRule rule = null;
+        ISchedulingRule rule;
         if (dest.exists()) {
             rule = ruleFactory.modifyRule(dest);
-            rule = MultiRule.combine(rule,
-                    ruleFactory.validateEditRule(new IResource[] { dest }));
+            rule = MultiRule.combine(rule, ruleFactory.validateEditRule(new IResource[] { dest }));
         }
         else {
             rule = ruleFactory.createRule(dest);
             // this might end up creating some folders, so include those, too
             IContainer parent = dest.getParent();
-            while (parent != null && !(parent instanceof IProject) &&
-                    !parent.exists()) {
+            while (parent != null && !(parent instanceof IProject) && !parent.exists()) {
                 rule = MultiRule.combine(rule, ruleFactory.createRule(parent));
                 parent = parent.getParent();
             }
@@ -645,13 +612,10 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
         WorkspaceModifyOperation op = new WorkspaceModifyOperation(rule) {
             @Override
             protected void execute(IProgressMonitor monitor)
-                    throws CoreException, InvocationTargetException,
-                    InterruptedException {
+                    throws CoreException, InvocationTargetException, InterruptedException {
                 try {
-                    if (dest.exists()) {
-                        if (!dest.getWorkspace().validateEdit(new IFile[] { dest }, getSite().getShell()).isOK()) {
-                            return;
-                        }
+                    if (dest.exists() && !dest.getWorkspace().validateEdit(new IFile[] { dest }, getSite().getShell()).isOK()) {
+                        return;
                     }
                     saveTo(imageData, dest, imageType, monitor);
                 }
@@ -660,12 +624,10 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                 }
             }
         };
-        ProgressMonitorDialog pmd = new ProgressMonitorDialog(
-                getSite().getShell());
+        ProgressMonitorDialog pmd = new ProgressMonitorDialog(getSite().getShell());
         try {
             pmd.run(true, true, op);
-            // reset our editor input to the file, if weren't not open on a
-            // file.
+            // reset our editor input to the file, if weren't not open on a file.
             if (getFileFor(getEditorInput()) == null) {
                 setInput(new FileEditorInput(dest));
             }
@@ -673,66 +635,43 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
         catch (InvocationTargetException ex) {
             Throwable t = ex.getCause();
 
-            String title = Messages.ImageViewer_saveErrorTitle;
-            String mesg = MessageFormat.format(
-                    Messages.ImageViewer_saveErrorMessage,
-                    path.toPortableString());
-            // ImagesActivator.getDefault().log(IStatus.WARNING, mesg, t);
-            IStatus st = null;
+            IStatus st;
             if (t instanceof CoreException) {
                 st = ((CoreException)t).getStatus();
             }
             else {
-                st = new Status(IStatus.ERROR, ImagesActivator.PLUGIN_ID, 0,
-                        t.toString(), t);
+                st = new Status(IStatus.ERROR, ImagesActivator.PLUGIN_ID, 0, t.toString(), t);
             }
             if (st.getSeverity() != IStatus.CANCEL) {
+                String title = Messages.ImageViewer_saveErrorTitle;
+                String mesg = MessageFormat.format(Messages.ImageViewer_saveErrorMessage, path.toPortableString());
                 ErrorDialog.openError(getSite().getShell(), title, mesg, st);
             }
         }
-        catch (InterruptedException ex) {
-            // ignore
+        catch (InterruptedException ignore) {
         }
     }
 
-    private void saveTo(ImageData imageData, final IFile dest,
-            final int imageType, IProgressMonitor monitor)
+    private void saveTo(ImageData imageData, final IFile dest, final int imageType, IProgressMonitor monitor)
             throws CoreException, InterruptedException, IOException {
-        //int taskSize = 500;
-        //if (!dest.getParent().exists())
-        //{
-        //    taskSize += 500;
-        //}
         // do an indeterminate progress monitor so that something shows, since
         // the generation of the image data doesn't report progress
-        monitor.beginTask(dest.getFullPath().toPortableString(),
-                IProgressMonitor.UNKNOWN/* taskSize */);
+        monitor.beginTask(dest.getFullPath().toPortableString(), IProgressMonitor.UNKNOWN);
         try {
             if (!dest.getParent().exists()) {
-                ContainerGenerator gen = new ContainerGenerator(
-                        dest.getFullPath().removeLastSegments(1));
+                ContainerGenerator gen = new ContainerGenerator(dest.getFullPath().removeLastSegments(1));
                 gen.generateContainer(new SubProgressMonitor(monitor, 500));
                 if (monitor.isCanceled()) {
                     throw new InterruptedException();
                 }
             }
             final ImageLoader loader = new ImageLoader();
-            loader.data = new ImageData[] {
-                imageData
-            };
+            loader.data = new ImageData[] { imageData };
 
-            // this uses a byte array
-            //ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            //loader.save(bout, imageType);
-            //byte[] bytes = bout.toByteArray();
-            //ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-
-            // but, let's use pipes instead so we don't have to buffer the whole
-            // thing unnecessarily in memory
+            // let's use pipes instead so we don't have to buffer the whole thing unnecessarily in memory
             PipedInputStream pin = new PipedInputStream();
             final PipedOutputStream pout = new PipedOutputStream(pin);
-            // the write to the pipe has to happen in a different thread or
-            // else we get deadlock
+            // the write to the pipe has to happen in a different thread or else we get deadlock
             Job writeJob = new Job(Messages.ImageViewer_saveAsPipeJobName) {
                 @Override
                 protected IStatus run(IProgressMonitor monitor) {
@@ -749,7 +688,8 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                                 ImagesActivator.PLUGIN_ID,
                                 MessageFormat.format(
                                         Messages.ImageViewer_saveAsLoadImageDataError,
-                                        dest.getFullPath()), ex);
+                                        dest.getFullPath()),
+                                ex);
                     }
                     finally {
                         UIActivator.close(pout);
@@ -758,19 +698,15 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                     if (!status.isOK()) {
                         ImagesActivator.getDefault().getLog().log(status);
                         final IStatus fstatus = status;
-                        getSite().getShell().getDisplay().asyncExec(
-                                new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        ErrorDialog.openError(
-                                                getSite().getShell(),
-                                                Messages.ImageViewer_saveErrorTitle,
-                                                MessageFormat.format(
-                                                        Messages.ImageViewer_saveErrorMessage,
-                                                        dest.getFullPath()),
-                                                fstatus);
-                                    }
-                                });
+                        getSite().getShell().getDisplay().asyncExec(() ->
+                            ErrorDialog.openError(
+                                getSite().getShell(),
+                                Messages.ImageViewer_saveErrorTitle,
+                                MessageFormat.format(
+                                        Messages.ImageViewer_saveErrorMessage,
+                                        dest.getFullPath()),
+                                fstatus)
+                        );
                     }
                     return Status.OK_STATUS;
                 }
@@ -785,17 +721,14 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
                 // worked before we destroy or create a file.
                 in.mark(1);
                 int first = in.read();
-                // the Job should have shown the error dialog if we don't get a
-                // first byte
+                // the Job should have shown the error dialog if we don't get a first byte
                 if (first != -1) {
                     in.reset();
                     if (dest.exists()) {
-                        dest.setContents(in, true, true,
-                                new SubProgressMonitor(monitor, 500));
+                        dest.setContents(in, true, true, new SubProgressMonitor(monitor, 500));
                     }
                     else {
-                        dest.create(in, true, new SubProgressMonitor(monitor,
-                                500));
+                        dest.create(in, true, new SubProgressMonitor(monitor, 500));
                     }
                 }
             }
@@ -815,7 +748,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
     /**
      * Add a property change listener.
-     * 
+     *
      * @see #PROP_CURRENT_IMAGE_INFORMATION
      * @see #PROP_PIXEL_LOCATION
      */
@@ -832,12 +765,10 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
      * Remove a property change listener.
      */
     public void removePropertyChangeListener(IPropertyChangeListener l) {
-        if (l != null) {
-            if (propChangeListeners != null) {
-                propChangeListeners.remove(l);
-                if (propChangeListeners.isEmpty()) {
-                    propChangeListeners = null;
-                }
+        if (l != null && propChangeListeners != null) {
+            propChangeListeners.remove(l);
+            if (propChangeListeners.isEmpty()) {
+                propChangeListeners = null;
             }
         }
     }
@@ -845,12 +776,10 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
     /**
      * Fire the specified property change event tothe listeners.
      */
-    private void firePropertyChangeEvent(String property, Object oldVal,
-            Object newVal) {
+    private void firePropertyChangeEvent(String property, Object oldVal, Object newVal) {
         if (propChangeListeners != null && !propChangeListeners.isEmpty()) {
             Object[] listeners = propChangeListeners.getListeners();
-            final PropertyChangeEvent evt = new PropertyChangeEvent(this,
-                    property, oldVal, newVal);
+            final PropertyChangeEvent evt = new PropertyChangeEvent(this, property, oldVal, newVal);
             for (final Object l : listeners) {
                 if (l instanceof IPropertyChangeListener) {
                     SafeRunner.run(new SafeRunnable() {
@@ -870,14 +799,12 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
     /**
      * Get the current image information.
-     * 
+     *
      * @return { SWT.IMAGE_* type, width, height } or null for no image
      */
     public int[] getCurrentImageInformation() {
         if (imageData != null) {
-            return new int[] {
-                    imageData.type, imageData.width, imageData.height
-            };
+            return new int[] { imageData.type, imageData.width, imageData.height };
         }
         return null;
     }
@@ -888,8 +815,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
     public RGB getImageRGB(int x, int y) {
         // make sure the requested pixel location is valid, otherwise you get
         // an SWT IllegalArgumentException
-        if (imageData != null && x >= 0 && x < imageData.width && y >= 0 &&
-                y < imageData.height) {
+        if (imageData != null && x >= 0 && x < imageData.width && y >= 0 && y < imageData.height) {
             return imageData.palette.getRGB(imageData.getPixel(x, y));
         }
         return null;
@@ -937,24 +863,17 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
             IFile f = getFileFor(getEditorInput());
             if (f != null) {
                 try {
-                    f.setSessionProperty(LAST_ZOOM_FACTOR_KEY,
-                            Double.valueOf(newZoom));
+                    f.setSessionProperty(LAST_ZOOM_FACTOR_KEY, Double.valueOf(newZoom));
                 }
                 catch (CoreException ignore) {
                     // just ignore it
                 }
             }
             // tell everyone
-            firePropertyChangeEvent(PROP_ZOOM_FACTOR, old,
-                    Double.valueOf(newZoom));
+            firePropertyChangeEvent(PROP_ZOOM_FACTOR, old, Double.valueOf(newZoom));
             // redraw the image
             if (imageCanvas != null) {
-                Runnable r = new Runnable() {
-                    public void run() {
-                        showImage(false);
-                    }
-                };
-                UIActivator.runInDisplayThread(r, imageCanvas.getDisplay());
+                UIActivator.runInDisplayThread(() -> showImage(false), imageCanvas.getDisplay());
             }
         }
     }
@@ -985,25 +904,16 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
 
         @Override
         public void resourceChanged(IResourceChangeEvent event) {
-            IResourceDelta delta = event.getDelta().findMember(
-                    imageFile.getFullPath());
+            IResourceDelta delta = event.getDelta().findMember( imageFile.getFullPath());
             if (delta != null) {
                 // file deleted -- close the editor
                 if (delta.getKind() == IResourceDelta.REMOVED) {
-                    Runnable r = new Runnable() {
-                        public void run() {
-                            // this needs to be run in the SWT thread
-                            getSite().getPage().closeEditor(ImageViewer.this,
-                                    false);
-                        }
-                    };
-                    getSite().getShell().getDisplay().asyncExec(r);
+                    getSite().getShell().getDisplay().asyncExec(() -> getSite().getPage().closeEditor(ImageViewer.this, false));
                 }
                 // file changed -- reload image
                 else if (delta.getKind() == IResourceDelta.CHANGED) {
                     int flags = delta.getFlags();
-                    if ((flags & IResourceDelta.CONTENT) != 0 ||
-                            (flags & IResourceDelta.LOCAL_CHANGED) != 0) {
+                    if ((flags & IResourceDelta.CONTENT) != 0 || (flags & IResourceDelta.LOCAL_CHANGED) != 0) {
                         startImageLoad();
                     }
                 }

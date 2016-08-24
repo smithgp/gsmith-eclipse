@@ -42,8 +42,6 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -142,8 +140,8 @@ public class ScratchPadView extends ViewPart {
 
     @Override
     public void createPartControl(Composite parent) {
-        textArea = new StyledText(parent, SWT.FULL_SELECTION | SWT.MULTI |
-                SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        textArea = new StyledText(parent,
+                SWT.FULL_SELECTION | SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         textArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // hook up the theme fonts and colors
@@ -152,15 +150,13 @@ public class ScratchPadView extends ViewPart {
         themeListener = new ScratchPadTheme.Listener() {
             @Override
             protected void applyColorsAndFonts() {
-                ScratchPadTheme.applyColorsAndFonts(textArea,
-                        themes.getCurrentTheme());
+                ScratchPadTheme.applyColorsAndFonts(textArea, themes.getCurrentTheme());
             }
 
             @Override
             protected boolean isApplicable(PropertyChangeEvent event) {
                 // also listen to if the entire theme changes
-                return IThemeManager.CHANGE_CURRENT_THEME.equals(event.getProperty()) ||
-                        super.isApplicable(event);
+                return IThemeManager.CHANGE_CURRENT_THEME.equals(event.getProperty()) || super.isApplicable(event);
             }
         };
         themes.addPropertyChangeListener(themeListener);
@@ -168,14 +164,11 @@ public class ScratchPadView extends ViewPart {
         // nicely load the initial text, with progress and stuff
         final boolean[] loaded = { false };
         try {
-            IProgressService svc = (IProgressService)getSite().getService(
-                    IProgressService.class);
+            IProgressService svc = getSite().getService(IProgressService.class);
             if (svc != null) {
                 svc.run(true, true, new IRunnableWithProgress() {
                     @Override
-                    public void run(IProgressMonitor monitor)
-                            throws InvocationTargetException,
-                            InterruptedException {
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         if (monitor.isCanceled()) {
                             throw new InterruptedException();
                         }
@@ -196,8 +189,7 @@ public class ScratchPadView extends ViewPart {
         if (!loaded[0]) {
             textArea.setCursor(textArea.getDisplay().getSystemCursor(SWT.CURSOR_WAIT));
             try {
-                textArea.setText(loadScratchText(filename,
-                        new NullProgressMonitor()));
+                textArea.setText(loadScratchText(filename, new NullProgressMonitor()));
             }
             finally {
                 textArea.setCursor(null);
@@ -210,8 +202,7 @@ public class ScratchPadView extends ViewPart {
         textArea.addSelectionListener(selectionProvider);
 
         // an action to clear all the text
-        final IAction clearAction = new Action(
-                Messages.ScratchPadView_clearActionLabel) {
+        final IAction clearAction = new Action(Messages.ScratchPadView_clearActionLabel) {
             @Override
             public void run() {
                 textArea.setText(""); //$NON-NLS-1$
@@ -222,12 +213,7 @@ public class ScratchPadView extends ViewPart {
                 ISharedImages.IMG_ETOOL_CLEAR));
         clearAction.setDisabledImageDescriptor(getSite().getWorkbenchWindow().getWorkbench().getSharedImages().getImageDescriptor(
                 ISharedImages.IMG_ETOOL_CLEAR_DISABLED));
-        textArea.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                clearAction.setEnabled(textArea.getCharCount() > 0);
-            }
-        });
+        textArea.addModifyListener(e -> clearAction.setEnabled(textArea.getCharCount() > 0));
         clearAction.setEnabled(textArea.getCharCount() > 0);
 
         // hookup to the global cut, copy, paste, etc. actions
@@ -263,8 +249,7 @@ public class ScratchPadView extends ViewPart {
         actionBars.getToolBarManager().add(new Separator("scratchpad.delete")); //$NON-NLS-1$
         actionBars.getToolBarManager().add(getAction(ActionFactory.DELETE));
         actionBars.getToolBarManager().add(clearAction);
-        actionBars.getToolBarManager().add(
-                new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        actionBars.getToolBarManager().add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         // setup our view's menu
         actionBars.getMenuManager().add(new Separator("scratchpad.undo")); //$NON-NLS-1$
@@ -278,19 +263,13 @@ public class ScratchPadView extends ViewPart {
         actionBars.getMenuManager().add(getAction(ActionFactory.DELETE));
         actionBars.getMenuManager().add(clearAction);
         actionBars.getMenuManager().add(getAction(ActionFactory.SELECT_ALL));
-        actionBars.getMenuManager().add(
-                new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        actionBars.getMenuManager().add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
         // make sure everything gets pushed out to the UI
         actionBars.updateActionBars();
 
         // start listening to changes, to save the scratch text
-        textArea.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                saveScratchText(textArea.getText());
-            }
-        });
+        textArea.addModifyListener(e -> saveScratchText(textArea.getText()));
     }
 
     @Override
@@ -305,8 +284,7 @@ public class ScratchPadView extends ViewPart {
         }
         super.dispose();
         if (themeListener != null) {
-            getSite().getWorkbenchWindow().getWorkbench().getThemeManager().removePropertyChangeListener(
-                    themeListener);
+            getSite().getWorkbenchWindow().getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
         }
         if (workbenchActions != null) {
             for (IWorkbenchAction a : workbenchActions.values()) {
@@ -342,12 +320,11 @@ public class ScratchPadView extends ViewPart {
      * will also maintain {@link #workbenchActions}.
      */
     private IWorkbenchAction getAction(ActionFactory f) {
-        IWorkbenchAction a = workbenchActions != null ? workbenchActions.get(f.getId())
-                : null;
+        IWorkbenchAction a = workbenchActions != null ? workbenchActions.get(f.getId()) : null;
         if (a == null) {
             a = f.create(getViewSite().getWorkbenchWindow());
             if (workbenchActions == null) {
-                workbenchActions = new HashMap<String, ActionFactory.IWorkbenchAction>();
+                workbenchActions = new HashMap<>();
             }
             workbenchActions.put(f.getId(), a);
         }
@@ -378,20 +355,18 @@ public class ScratchPadView extends ViewPart {
                 textArea.copy();
             }
         };
-        actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
-                copyAction);
+        actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(), copyAction);
 
         final IAction deleteAction = new Action() {
             @Override
             public void run() {
                 Point sel = textArea.getSelection();
                 if (sel != null && (sel.y - sel.x) > 0) {
-                    textArea.replaceTextRange(sel.x, (sel.y - sel.x), ""); //$NON-NLS-1$
+                    textArea.replaceTextRange(sel.x, sel.y - sel.x, ""); //$NON-NLS-1$
                 }
             }
         };
-        actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(),
-                deleteAction);
+        actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(), deleteAction);
 
         // actions whose enabled is based on the selection of the textArea
         final IAction[] selectionActions = {
@@ -415,26 +390,18 @@ public class ScratchPadView extends ViewPart {
                 textArea.paste();
             }
         };
-        actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(),
-                pasteAction);
+        actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(), pasteAction);
 
         final IAction selectAllAction = new Action() {
             @Override
             public void run() {
                 textArea.selectAll();
                 // StyledText.selectAll() doesn't fire events, so do it manually
-                setActionEnableds(textArea.getSelectionCount() > 0,
-                        selectionActions);
+                setActionEnableds(textArea.getSelectionCount() > 0, selectionActions);
             }
         };
-        actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(),
-                selectAllAction);
-        textArea.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                selectAllAction.setEnabled(textArea.getCharCount() > 0);
-            }
-        });
+        actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(), selectAllAction);
+        textArea.addModifyListener(e -> selectAllAction.setEnabled(textArea.getCharCount() > 0));
         selectAllAction.setEnabled(textArea.getCharCount() > 0);
 
         final IAction undoAction = new Action() {
@@ -445,8 +412,7 @@ public class ScratchPadView extends ViewPart {
                 }
             }
         };
-        actionBars.setGlobalActionHandler(ActionFactory.UNDO.getId(),
-                undoAction);
+        actionBars.setGlobalActionHandler(ActionFactory.UNDO.getId(), undoAction);
         undoAction.setEnabled(false);
 
         final IAction redoAction = new Action() {
@@ -457,8 +423,7 @@ public class ScratchPadView extends ViewPart {
                 }
             }
         };
-        actionBars.setGlobalActionHandler(ActionFactory.REDO.getId(),
-                redoAction);
+        actionBars.setGlobalActionHandler(ActionFactory.REDO.getId(), redoAction);
         redoAction.setEnabled(false);
 
         // set up undo/redo operations
@@ -495,8 +460,7 @@ public class ScratchPadView extends ViewPart {
     /**
      * Read the saved scratch pad text.
      */
-    private static String loadScratchText(String filename,
-            IProgressMonitor monitor) {
+    private static String loadScratchText(String filename, IProgressMonitor monitor) {
         if (monitor == null) {
             monitor = new NullProgressMonitor();
         }
@@ -505,8 +469,7 @@ public class ScratchPadView extends ViewPart {
         try {
             IPath path = getScratchTextFilePath(filename);
             ISchedulingRule rule = new SaveRule(path);
-            Job.getJobManager().beginRule(rule,
-                    new SubProgressMonitor(monitor, 100));
+            Job.getJobManager().beginRule(rule, new SubProgressMonitor(monitor, 100));
             BufferedReader in = null;
             try {
                 File f = path.toFile();
@@ -515,8 +478,7 @@ public class ScratchPadView extends ViewPart {
                     if (monitor.isCanceled()) {
                         return ""; //$NON-NLS-1$
                     }
-                    in = new BufferedReader(new InputStreamReader(
-                            new FileInputStream(f), "UTF-8")); //$NON-NLS-1$
+                    in = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8")); //$NON-NLS-1$
                     char[] buf = new char[256];
                     for (int len = in.read(buf); len >= 0; len = in.read(buf)) {
                         if (monitor.isCanceled()) {
@@ -528,8 +490,8 @@ public class ScratchPadView extends ViewPart {
             }
             catch (IOException ex) {
                 UIActivator.log(UIActivator.getDefault(), IStatus.ERROR,
-                        MessageFormat.format(Messages.ScratchPadView_readError,
-                                path), ex);
+                        MessageFormat.format(Messages.ScratchPadView_readError, path),
+                        ex);
             }
             finally {
                 UIActivator.close(in);
@@ -555,8 +517,7 @@ public class ScratchPadView extends ViewPart {
     /**
      * Save the scratch text immediately.
      */
-    private static void saveScratchTextImmediate(String filename,
-            final String text, IProgressMonitor monitor) {
+    private static void saveScratchTextImmediate(String filename, final String text, IProgressMonitor monitor) {
         if (monitor == null) {
             monitor = new NullProgressMonitor();
         }
@@ -569,15 +530,14 @@ public class ScratchPadView extends ViewPart {
             try {
                 File f = path.toFile();
                 if (f != null) {
-                    out = new BufferedWriter(new OutputStreamWriter(
-                            new FileOutputStream(f), "UTF-8")); //$NON-NLS-1$
+                    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8")); //$NON-NLS-1$
                     out.write(text);
                 }
             }
             catch (IOException ex) {
                 UIActivator.log(UIActivator.getDefault(), IStatus.ERROR,
-                        MessageFormat.format(
-                                Messages.ScratchPadView_writeError, path), ex);
+                        MessageFormat.format(Messages.ScratchPadView_writeError, path),
+                        ex);
             }
             finally {
                 UIActivator.close(out);
@@ -627,7 +587,7 @@ public class ScratchPadView extends ViewPart {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             // get the text and save it away
-            String text = null;
+            String text;
             synchronized (this) {
                 text = this.text;
                 this.text = null; // ready for next run
@@ -648,15 +608,13 @@ public class ScratchPadView extends ViewPart {
     /**
      * A workbench selection provider that can be bound to a StyledText.
      */
-    private class SelectionProvider implements ISelectionProvider,
-            SelectionListener {
+    private class SelectionProvider implements ISelectionProvider, SelectionListener {
         private ListenerList listeners = new ListenerList(ListenerList.IDENTITY);
 
         ISelection selection = StructuredSelection.EMPTY;
 
         @Override
-        public void addSelectionChangedListener(
-                ISelectionChangedListener listener) {
+        public void addSelectionChangedListener(ISelectionChangedListener listener) {
             if (listener != null) {
                 this.listeners.add(listener);
             }
@@ -668,8 +626,7 @@ public class ScratchPadView extends ViewPart {
         }
 
         @Override
-        public void removeSelectionChangedListener(
-                ISelectionChangedListener listener) {
+        public void removeSelectionChangedListener(ISelectionChangedListener listener) {
             if (listener != null) {
                 this.listeners.remove(listener);
             }
@@ -686,8 +643,7 @@ public class ScratchPadView extends ViewPart {
             }
             if (!selection.equals(this.selection)) {
                 this.selection = selection;
-                SelectionChangedEvent event = new SelectionChangedEvent(this,
-                        selection);
+                SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
                 fireSelectionChanged(event);
             }
         }
@@ -697,6 +653,7 @@ public class ScratchPadView extends ViewPart {
             for (int i = 0; i < listeners.length; ++i) {
                 final ISelectionChangedListener l = (ISelectionChangedListener)listeners[i];
                 SafeRunner.run(new SafeRunnable() {
+                    @Override
                     public void run() {
                         l.selectionChanged(event);
                     }
@@ -707,8 +664,7 @@ public class ScratchPadView extends ViewPart {
         @Override
         public void widgetSelected(SelectionEvent e) {
             if (e.getSource() instanceof StyledText) {
-                setSelectionInternal(new TextSelection(
-                        (StyledText)e.getSource()));
+                setSelectionInternal(new TextSelection((StyledText)e.getSource()));
             }
         }
 
@@ -775,23 +731,30 @@ public class ScratchPadView extends ViewPart {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()) {
                 return false;
+            }
             TextSelection other = (TextSelection)obj;
             if (text == null) {
-                if (other.text != null)
+                if (other.text != null) {
                     return false;
+                }
             }
-            else if (!text.equals(other.text))
+            else if (!text.equals(other.text)) {
                 return false;
-            if (length != other.length)
+            }
+            if (length != other.length) {
                 return false;
-            if (offset != other.offset)
+            }
+            if (offset != other.offset) {
                 return false;
+            }
             return true;
         }
 

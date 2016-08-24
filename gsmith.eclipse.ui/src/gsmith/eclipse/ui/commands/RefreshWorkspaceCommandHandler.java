@@ -17,19 +17,17 @@ public class RefreshWorkspaceCommandHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Job job = new WorkspaceJob(Messages.RefreshWorkspaceCommandHandler_refreshJobName) {
             @Override
-            public IStatus runInWorkspace(IProgressMonitor monitor)
-                    throws CoreException {
-                ResourcesPlugin.getWorkspace().getRoot().refreshLocal(
-                        IResource.DEPTH_INFINITE, monitor);
+            public IStatus runInWorkspace(IProgressMonitor monitor)throws CoreException {
+                ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, monitor);
                 return Status.OK_STATUS;
             }
 
+            @Override
             public boolean belongsTo(Object family) {
                 return family == ResourcesPlugin.FAMILY_MANUAL_REFRESH;
             }
         };
-        job.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().refreshRule(
-                ResourcesPlugin.getWorkspace().getRoot()));
+        job.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().refreshRule(ResourcesPlugin.getWorkspace().getRoot()));
         job.setSystem(false);
         job.setUser(true);
         job.schedule();

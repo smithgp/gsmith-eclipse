@@ -56,17 +56,14 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
         WindowSizeDialog d = new WindowSizeDialog(shell);
         if (d.open() == WindowSizeDialog.OK) {
             // save some stuff off
-            WindowSize size = new WindowSize(d.getSelectedWidth(),
-                    d.getSelectedHeight());
+            WindowSize size = new WindowSize(d.getSelectedWidth(), d.getSelectedHeight());
             if (d.getAddSize()) {
                 WindowSize.addDefaultSize(size);
             }
             WindowSize.setTopLeftCorner(d.getSelectedTopLeftCorner());
-            UIActivator.getDefault().getPreferenceStore().setValue(
-                    REMEMBER_SIZE_PREF_KEY, d.getAddSize());
+            UIActivator.getDefault().getPreferenceStore().setValue(REMEMBER_SIZE_PREF_KEY, d.getAddSize());
             // resize the window
-            SetWindowSizeAction.resize(shell, size.width, size.height,
-                    d.getSelectedTopLeftCorner());
+            SetWindowSizeAction.resize(shell, size.width, size.height, d.getSelectedTopLeftCorner());
         }
     }
 
@@ -87,14 +84,14 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
             this.shell = parentShell;
         }
 
+        public WindowSizeDialog(Shell parentShell) {
+            this(parentShell, parentShell);
+        }
+
         @Override
         protected void configureShell(Shell newShell) {
             super.configureShell(newShell);
             newShell.setText(Messages.SetWindowSizeCommandHandler_dialogTitle);
-        }
-
-        public WindowSizeDialog(Shell parentShell) {
-            this(parentShell, parentShell);
         }
 
         @Override
@@ -106,15 +103,13 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
             l.setText(Messages.SetWindowSizeCommandHandler_sizesLabel);
             GridData gd = new GridData();
             l.setLayoutData(gd);
-            final Combo sizes = new Combo(main, SWT.BORDER | SWT.READ_ONLY |
-                    SWT.DROP_DOWN);
+            final Combo sizes = new Combo(main, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
             gd = new GridData();
             gd.grabExcessHorizontalSpace = true;
             gd.horizontalAlignment = SWT.FILL;
             sizes.setLayoutData(gd);
             final Button deleteButton = new Button(main, SWT.PUSH);
-            deleteButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(
-                    ISharedImages.IMG_TOOL_DELETE));
+            deleteButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
             deleteButton.setToolTipText(Messages.SetWindowSizeCommandHandler_deleteButtonTip);
             deleteButton.setLayoutData(new GridData());
 
@@ -188,8 +183,7 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
 
             // fill up the dropdown
             final Rectangle currentBounds = shell.getBounds();
-            final List<WindowSize> defaultSizes = new ArrayList<WindowSize>(
-                    Arrays.asList(WindowSize.getDefaultSizes()));
+            final List<WindowSize> defaultSizes = new ArrayList<>(Arrays.asList(WindowSize.getDefaultSizes()));
             fillSizesCombo(sizes, defaultSizes, currentBounds);
 
             // update ui as the dropdown selection changes
@@ -274,14 +268,12 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
 
             // initialize from preferences
             topLeftCheck.setSelection(WindowSize.getTopLeftCorner());
-            addSizeCheck.setSelection(UIActivator.getDefault().getPreferenceStore().getBoolean(
-                    REMEMBER_SIZE_PREF_KEY));
+            addSizeCheck.setSelection(UIActivator.getDefault().getPreferenceStore().getBoolean(REMEMBER_SIZE_PREF_KEY));
 
             return main;
         }
 
-        private void fillSizesCombo(Combo sizes, List<WindowSize> defaultSizes,
-                Rectangle currentBounds) {
+        private void fillSizesCombo(Combo sizes, List<WindowSize> defaultSizes, Rectangle currentBounds) {
             try {
                 sizes.setRedraw(false);
                 sizes.removeAll();
@@ -289,10 +281,8 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
                 sizes.select(0);
                 for (int i = 0; i < defaultSizes.size(); i++) {
                     WindowSize size = defaultSizes.get(i);
-                    sizes.add(SetWindowSizeAction.getSizeDisplayLabel(
-                            size.width, size.height));
-                    if (size.width == currentBounds.width &&
-                            size.height == currentBounds.height) {
+                    sizes.add(SetWindowSizeAction.getSizeDisplayLabel(size.width, size.height));
+                    if (size.width == currentBounds.width && size.height == currentBounds.height) {
                         sizes.select(i + 1);
                     }
                 }
@@ -329,8 +319,7 @@ public class SetWindowSizeCommandHandler extends AbstractHandler {
         }
 
         public boolean getSelectedTopLeftCorner() {
-            return selectedTopLeftCorner != null &&
-                    selectedTopLeftCorner.booleanValue();
+            return selectedTopLeftCorner != null && selectedTopLeftCorner.booleanValue();
         }
 
         public boolean getAddSize() {

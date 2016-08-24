@@ -21,7 +21,6 @@ import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.ActionFactory;
@@ -76,29 +75,15 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
             if (currentEditor != null && evt.getSource() == currentEditor) {
                 Runnable r = null;
                 if (ImageViewer.PROP_CURRENT_IMAGE_INFORMATION.equals(evt.getProperty())) {
-                    r = new Runnable() {
-                        public void run() {
-                            updateImageInformation((int[])evt.getNewValue());
-                        }
-                    };
+                    r = () -> updateImageInformation((int[])evt.getNewValue());
                 }
                 else if (ImageViewer.PROP_PIXEL_LOCATION.equals(evt.getProperty())) {
-                    r = new Runnable() {
-                        @Override
-                        public void run() {
-                            updateMouseLocation((Point)evt.getNewValue());
-                        }
-                    };
+                    r = () -> updateMouseLocation((Point)evt.getNewValue());
                 }
                 else if (ImageViewer.PROP_ZOOM_FACTOR.equals(evt.getProperty())) {
                     final Object zoom = evt.getNewValue();
                     if (zoom instanceof Double) {
-                        r = new Runnable() {
-                            @Override
-                            public void run() {
-                                updateZoomFactor((Double)zoom);
-                            }
-                        };
+                        r = () -> updateZoomFactor((Double)zoom);
                     }
                 }
                 if (r != null) {
@@ -121,36 +106,38 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
 
             ISelection selection = StructuredSelection.EMPTY;
 
-            public void addSelectionChangedListener(
-                    ISelectionChangedListener listener) {
+            @Override
+            public void addSelectionChangedListener(ISelectionChangedListener listener) {
                 if (listener != null) {
                     this.listeners.add(listener);
                 }
             }
 
+            @Override
             public ISelection getSelection() {
                 return this.selection;
             }
 
-            public void removeSelectionChangedListener(
-                    ISelectionChangedListener listener) {
+            @Override
+            public void removeSelectionChangedListener(ISelectionChangedListener listener) {
                 if (listener != null) {
                     this.listeners.remove(listener);
                 }
             }
 
+            @Override
             public void setSelection(ISelection selection) {
                 if (selection == null) {
                     selection = StructuredSelection.EMPTY;
                 }
                 if (!selection.equals(this.selection)) {
                     this.selection = selection;
-                    final SelectionChangedEvent event = new SelectionChangedEvent(
-                            this, selection);
+                    final SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
                     Object[] listeners = this.listeners.getListeners();
                     for (int i = 0; i < listeners.length; ++i) {
                         final ISelectionChangedListener l = (ISelectionChangedListener)listeners[i];
                         SafeRunner.run(new SafeRunnable() {
+                            @Override
                             public void run() {
                                 l.selectionChanged(event);
                             }
@@ -163,14 +150,8 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
 
         // hook up File|Properties (ALT+ENTER) so that it works from within
         // the editor
-        IShellProvider shellProvider = new IShellProvider() {
-            @Override
-            public Shell getShell() {
-                return currentEditor.getSite().getShell();
-            }
-        };
-        propertiesAction = new PropertyDialogAction(shellProvider,
-                editorInputSelectionProvider) {
+        IShellProvider shellProvider = () -> currentEditor.getSite().getShell();
+        propertiesAction = new PropertyDialogAction(shellProvider, editorInputSelectionProvider) {
             // override to include isApplicableForSelection in the calculation.
             // this is to disable the action on editor inputs that our
             // property page(s) don't support, so we don't get the silly
@@ -180,8 +161,7 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
                 setEnabled(isApplicableForSelection(selection));
             }
         };
-        bars.setGlobalActionHandler(ActionFactory.PROPERTIES.getId(),
-                propertiesAction);
+        bars.setGlobalActionHandler(ActionFactory.PROPERTIES.getId(), propertiesAction);
     }
 
     @Override
@@ -200,6 +180,7 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
                 "image.mouse.location", //$NON-NLS-1$
                 getMouseLocationString(Integer.MAX_VALUE / 2, Integer.MAX_VALUE / 2).length());
         statusLineManager.add(mouseLocationStatusItem);
+
         rgbStatusItem = new StatusLineContributionItem("image.mouse.rgb", //$NON-NLS-1$
                 getRGBString(1000, 1000, 1000).length());
         statusLineManager.add(rgbStatusItem);
@@ -227,13 +208,11 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
                 currentEditor = null;
             }
 
-            updateImageInformation(currentEditor != null ? currentEditor.getCurrentImageInformation()
-                    : null);
+            updateImageInformation(currentEditor != null ? currentEditor.getCurrentImageInformation() : null);
             // we get it on next mouse move
             updateMouseLocation(null);
 
-            updateZoomFactor(currentEditor != null ? currentEditor.getZoomFactor()
-                    : null);
+            updateZoomFactor(currentEditor != null ? currentEditor.getZoomFactor() : null);
 
             updateEditorInputSelectionProvider(currentEditor);
 
@@ -260,8 +239,7 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
     private void updateImageInformation(int[] imageInfo) {
         if (imageInfoStatusItem != null) {
             if (imageInfo != null && imageInfo.length >= 3) {
-                imageInfoStatusItem.setText(getImageInfoString(imageInfo[0],
-                        imageInfo[1], imageInfo[2]));
+                imageInfoStatusItem.setText(getImageInfoString(imageInfo[0], imageInfo[1], imageInfo[2]));
             }
             else {
                 imageInfoStatusItem.setText(""); //$NON-NLS-1$
@@ -271,7 +249,7 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
 
     /**
      * Get the image info string.
-     * 
+     *
      * @param type
      *            the SWT.IMAGE_* image type.
      * @param width
@@ -299,8 +277,7 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
             }
         }
         if (rgbStatusItem != null) {
-            RGB rgb = currentEditor != null && p != null ? currentEditor.getImageRGB(
-                    p.x, p.y) : null;
+            RGB rgb = currentEditor != null && p != null ? currentEditor.getImageRGB(p.x, p.y) : null;
             if (rgb != null) {
                 rgbStatusItem.setText(getRGBString(rgb.red, rgb.blue, rgb.green));
             }
@@ -325,15 +302,13 @@ public class ImageViewerActionBarContributor extends EditorActionBarContributor 
      * Get the mouse location string.
      */
     private String getMouseLocationString(int x, int y) {
-        return MessageFormat.format(
-                Messages.ImageViewerActionBarContributor_mouseLocation, x, y);
+        return MessageFormat.format(Messages.ImageViewerActionBarContributor_mouseLocation, x, y);
     }
 
     /**
      * Get the RGB display string.
      */
     private String getRGBString(int red, int blue, int green) {
-        return MessageFormat.format(
-                Messages.ImageViewerActionBarContributor_rgb, red, green, blue);
+        return MessageFormat.format(Messages.ImageViewerActionBarContributor_rgb, red, green, blue);
     }
 }

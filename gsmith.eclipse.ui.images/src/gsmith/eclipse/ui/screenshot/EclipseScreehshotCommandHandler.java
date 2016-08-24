@@ -14,8 +14,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class EclipseScreehshotCommandHandler extends ScreenshotCommandHandler {
     @Override
-    protected ImageData getScreenshotImage(ExecutionEvent event)
-            throws ExecutionException {
+    protected ImageData getScreenshotImage(ExecutionEvent event) throws ExecutionException {
         Shell shell = HandlerUtil.getActiveShellChecked(event);
         // this will be the full (with trim) size of the window, at the display
         // location

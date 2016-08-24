@@ -1,7 +1,6 @@
 package gsmith.eclipse.ui;
 
 import java.util.Collections;
-import java.util.Iterator;
 
 import org.eclipse.core.expressions.ICountable;
 import org.eclipse.core.expressions.IIterable;
@@ -19,24 +18,14 @@ public class IEditorPartAdapterFactory implements IAdapterFactory {
             IFile.class, IResource.class, IIterable.class, ICountable.class
     };
 
-    private static final ICountable COUNT_1 = new ICountable() {
-        @Override
-        public int count() {
-            return 1;
-        }
-    };
+    private static final ICountable COUNT_1 = () -> 1;
 
     @Override
     public <T> T getAdapter(final Object adaptableObject, Class<T> adapterType) {
         if (adaptableObject instanceof IEditorPart) {
             // do these on the editor part
             if (adapterType == IIterable.class) {
-                return adapterType.cast(new IIterable<IEditorPart>() {
-                    @Override
-                    public Iterator<IEditorPart> iterator() {
-                        return Collections.singleton((IEditorPart)adaptableObject).iterator();
-                    }
-                });
+                return adapterType.cast((IIterable<IEditorPart>)Collections.singleton((IEditorPart)adaptableObject)::iterator);
             }
             else if (adapterType == ICountable.class) {
                 return adapterType.cast(COUNT_1);

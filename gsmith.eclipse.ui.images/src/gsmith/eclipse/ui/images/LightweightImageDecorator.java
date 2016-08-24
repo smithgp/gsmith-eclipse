@@ -61,8 +61,7 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
          */
         public final int origHeight;
 
-        ImageInfo(long modificationStamp, ImageDescriptor thumbnail,
-                int origType, int origWidth, int origHeight) {
+        ImageInfo(long modificationStamp, ImageDescriptor thumbnail, int origType, int origWidth, int origHeight) {
             this.modificationStamp = modificationStamp;
             this.thumbnail = thumbnail;
             this.origType = origType;
@@ -90,9 +89,8 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
             // if the ContentTypeDecorator is enabled, we need to hack around
             // its usage of IDecoration.REPLACE.
             boolean doHack = mgr.getBaseLabelProvider("org.eclipse.ui.ContentTypeDecorator") != null && //$NON-NLS-1$
-                    mgr.getEnabled("org.eclipse.ui.ContentTypeDecorator"); //$NON-NLS-1$
-            if (!doHack &&
-                    DecorationContext.DEFAULT_CONTEXT instanceof DecorationContext) {
+                             mgr.getEnabled("org.eclipse.ui.ContentTypeDecorator"); //$NON-NLS-1$
+            if (!doHack && DecorationContext.DEFAULT_CONTEXT instanceof DecorationContext) {
                 ((DecorationContext)DecorationContext.DEFAULT_CONTEXT).putProperty(
                         IDecoration.ENABLE_REPLACE, Boolean.TRUE);
                 decoration.addOverlay(info.thumbnail, IDecoration.REPLACE);
@@ -154,9 +152,7 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
         long modificationStamp = file.getModificationStamp();
         int type = -1, width = -1, height = -1;
         // no cache or the file has changed since the cache
-        if (imageInfo == null ||
-                imageInfo.modificationStamp != modificationStamp) {
-            // System.out.println("#!#! loading for " + file.getFullPath());
+        if (imageInfo == null || imageInfo.modificationStamp != modificationStamp) {
             // try to load the image
             InputStream in = null;
             ImageData imageData = null;
@@ -165,17 +161,15 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
             try {
                 in = file.getContents(true);
                 Display display = UIActivator.getDisplay();
-                // we have to load it via an ImageData; if we do new
-                // Image(display, in),
-                // then the ImageData from image.getImageData() doesn't have
-                // type information.
+                // we have to load it via an ImageData; if we do new Image(display, in),
+                // then the ImageData from image.getImageData() doesn't have type information.
                 imageData = new ImageData(in);
                 image = new Image(display, imageData);
             }
-            catch (SWTException ex) {
+            catch (SWTException ignore) {
                 // bad image
             }
-            catch (CoreException ex) {
+            catch (CoreException ignore) {
                 // io error
             }
             finally {
@@ -196,8 +190,7 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
             }
 
             // save it away (even if we didn't load an image)
-            imageInfo = new ImageInfo(modificationStamp, descriptor, type,
-                    width, height);
+            imageInfo = new ImageInfo(modificationStamp, descriptor, type, width, height);
             try {
                 file.setSessionProperty(CACHE_KEY, imageInfo);
             }
@@ -218,7 +211,7 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
     /**
      * Scale an image to the size specified by the bounds. This will dispose of
      * the source image if a new is created.
-     * 
+     *
      * @param d
      *            the device to use if a new image needs to be created.
      * @param im
@@ -244,23 +237,21 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
 
             // put up a border for debugging to help see where the image is
             // located in the available space
-            // gc.drawRectangle(0, 0, width - 1, height - 1);
+            //gc.drawRectangle(0, 0, width - 1, height - 1);
 
             // image is smaller than requested since, so center
-            if (curBounds.width <= width &&
-                    curBounds.height <= curBounds.height) {
+            if (curBounds.width <= width && curBounds.height <= curBounds.height) {
                 gc.drawImage(im, 0, 0, curBounds.width, curBounds.height,
-                        (width - curBounds.width) / 2,
-                        (height - curBounds.height) / 2, curBounds.width,
-                        curBounds.height);
+                             (width - curBounds.width) / 2,
+                             (height - curBounds.height) / 2, curBounds.width,
+                             curBounds.height);
             }
-            else // too wide or too tall
-            {
+            // too wide or too tall
+            else {
                 // shortcut if the image is perfectly proportional to avoid
                 // some of the math below
                 if (curBounds.width == curBounds.height) {
-                    gc.drawImage(im, 0, 0, curBounds.width, curBounds.height,
-                            0, 0, width, height);
+                    gc.drawImage(im, 0, 0, curBounds.width, curBounds.height, 0, 0, width, height);
                 }
                 // try to keep the proportions of the original image
                 // wider than tall
@@ -268,16 +259,14 @@ public class LightweightImageDecorator implements ILightweightLabelDecorator {
                     // the proportional new height
                     int newHt = (int)(height * ((double)curBounds.height / (double)curBounds.width));
                     // and center that
-                    gc.drawImage(im, 0, 0, curBounds.width, curBounds.height,
-                            0, (height - newHt) / 2, width, newHt);
+                    gc.drawImage(im, 0, 0, curBounds.width, curBounds.height, 0, (height - newHt) / 2, width, newHt);
                 }
-                else // taller than wide
-                {
+                // taller than wide
+                else {
                     // the proportional new width
                     int newWd = (int)(width * ((double)curBounds.width / (double)curBounds.height));
                     // and center that
-                    gc.drawImage(im, 0, 0, curBounds.width, curBounds.height,
-                            (width - newWd) / 2, 0, newWd, height);
+                    gc.drawImage(im, 0, 0, curBounds.width, curBounds.height, (width - newWd) / 2, 0, newWd, height);
 
                 }
             }
