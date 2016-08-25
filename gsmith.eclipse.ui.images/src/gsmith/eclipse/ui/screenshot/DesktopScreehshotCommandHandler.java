@@ -1,5 +1,7 @@
 package gsmith.eclipse.ui.screenshot;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.graphics.GC;
@@ -14,7 +16,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class DesktopScreehshotCommandHandler extends ScreenshotCommandHandler {
     @Override
-    protected ImageData getScreenshotImage(ExecutionEvent event) throws ExecutionException {
+    protected CompletableFuture<ImageData> getScreenshotImage(ExecutionEvent event) throws ExecutionException {
         Shell shell = HandlerUtil.getActiveShellChecked(event);
         Display display = shell.getDisplay();
         GC gc = new GC(display);
@@ -26,7 +28,7 @@ public class DesktopScreehshotCommandHandler extends ScreenshotCommandHandler {
         finally {
             gc.dispose();
         }
-        return image.getImageData();
+        return CompletableFuture.completedFuture(image.getImageData());
     }
 
     /**
@@ -35,25 +37,39 @@ public class DesktopScreehshotCommandHandler extends ScreenshotCommandHandler {
      */
     public static class NoEclipse extends DesktopScreehshotCommandHandler {
         @Override
-        protected ImageData getScreenshotImage(ExecutionEvent event)
-                throws ExecutionException {
+        protected CompletableFuture<ImageData> getScreenshotImage(ExecutionEvent event) throws ExecutionException {
             final Shell shell = HandlerUtil.getActiveShellChecked(event);
+            // hide the eclipse window now
             shell.setVisible(false);
-            // TODO: figure out something better than just sleeping.
-            // if we don't do this, then we see paint remnants of the Eclipse
-            // window in the screenshot
-            try {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException ex) {
-                // ignore
-            }
-            try {
-                return super.getScreenshotImage(event);
-            }
-            finally {
-                shell.getDisplay().asyncExec(() -> shell.setVisible(true));
-            }
+            CompletableFuture<ImageData> f = new CompletableFuture<>();
+            // run the super method later, sending the result to our return future
+            shell.getDisplay().asyncExec(() -> {
+                try {
+                    CompletableFuture<ImageData> superf = super.getScreenshotImage(event);
+                    if (superf != null) {
+                        superf.whenComplete((im, ex) -> {
+                           if (ex != null) {
+                               f.completeExceptionally(ex);
+                           }
+                           else {
+                               f.complete(im);
+                           }
+                        });
+                    }
+                    else {
+                        f.complete(null);
+                    }
+                }
+                catch (Exception ex) {
+                    f.completeExceptionally(ex);
+                }
+                finally {
+                    f.complete(null); // just in case, always finish it out so the eclipse will get shown again
+                }
+            });
+
+            // always re-show the eclipse window after the image is generated
+            return f.whenComplete((im, ex) -> shell.getDisplay().asyncExec(() -> shell.setVisible(true)));
         }
     }
 }

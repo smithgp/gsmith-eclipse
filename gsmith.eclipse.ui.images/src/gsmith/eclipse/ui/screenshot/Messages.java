@@ -4,6 +4,8 @@ import org.eclipse.osgi.util.NLS;
 
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "gsmith.eclipse.ui.screenshot.messages"; //$NON-NLS-1$
+    public static String ScreenshotCommandHandler_openErrorTitle;
+    public static String ScreenshotCommandHandler_openErrorMessage;
     public static String ScreenshotCommandHandler_editorDisplayName;
     static {
         // initialize resource bundle

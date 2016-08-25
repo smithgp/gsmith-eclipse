@@ -1,5 +1,7 @@
 package gsmith.eclipse.ui.screenshot;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.graphics.GC;
@@ -14,7 +16,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
  */
 public class EclipseScreehshotCommandHandler extends ScreenshotCommandHandler {
     @Override
-    protected ImageData getScreenshotImage(ExecutionEvent event) throws ExecutionException {
+    protected CompletableFuture<ImageData> getScreenshotImage(ExecutionEvent event) throws ExecutionException {
         Shell shell = HandlerUtil.getActiveShellChecked(event);
         // this will be the full (with trim) size of the window, at the display
         // location
@@ -30,6 +32,6 @@ public class EclipseScreehshotCommandHandler extends ScreenshotCommandHandler {
         finally {
             gc.dispose();
         }
-        return image.getImageData();
+        return CompletableFuture.completedFuture(image.getImageData());
     }
 }
