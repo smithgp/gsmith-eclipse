@@ -64,7 +64,7 @@ public class UIActivator extends AbstractUIPlugin {
     /**
      * Run the code in the display thread.
      */
-    public static void runInDisplayThread(Runnable r, Display d) {
+    public static void runInDisplayThread(Display d, Runnable r) {
         if (Display.getCurrent() == d) {
             r.run();
         }

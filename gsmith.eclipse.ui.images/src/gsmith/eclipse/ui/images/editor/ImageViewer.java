@@ -873,7 +873,7 @@ public class ImageViewer extends EditorPart implements IReusableEditor {
             firePropertyChangeEvent(PROP_ZOOM_FACTOR, old, Double.valueOf(newZoom));
             // redraw the image
             if (imageCanvas != null) {
-                UIActivator.runInDisplayThread(() -> showImage(false), imageCanvas.getDisplay());
+                UIActivator.runInDisplayThread(imageCanvas.getDisplay(), () -> showImage(false));
             }
         }
     }

@@ -41,7 +41,7 @@ public abstract class ScreenshotCommandHandler extends AbstractHandler {
             // when the image is fetched
             f.whenComplete((im, ex) -> {
                 // always in UI thread
-                UIActivator.runInDisplayThread(() -> {
+                UIActivator.runInDisplayThread(shell.getDisplay(), () -> {
                     // show an error from generating the image
                     if (ex != null) {
                         IStatus status = null;
@@ -59,7 +59,7 @@ public abstract class ScreenshotCommandHandler extends AbstractHandler {
                     else if (im != null) {
                         handleImage(im);
                     }
-                }, shell.getDisplay());
+                });
             });
         }
         return null;
