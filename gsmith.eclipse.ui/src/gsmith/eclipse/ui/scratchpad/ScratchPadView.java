@@ -30,7 +30,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -166,15 +165,12 @@ public class ScratchPadView extends ViewPart {
         try {
             IProgressService svc = getSite().getService(IProgressService.class);
             if (svc != null) {
-                svc.run(true, true, new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        if (monitor.isCanceled()) {
-                            throw new InterruptedException();
-                        }
-                        textArea.setText(loadScratchText(filename, monitor));
-                        loaded[0] = true;
+                svc.run(true, true, monitor -> {
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException();
                     }
+                    textArea.setText(loadScratchText(filename, monitor));
+                    loaded[0] = true;
                 });
             }
         }
@@ -195,8 +191,6 @@ public class ScratchPadView extends ViewPart {
                 textArea.setCursor(null);
             }
         }
-
-        // REVIEWME: put caret at end of initial text?
 
         // start listening to selections to bind to our selection provider
         textArea.addSelectionListener(selectionProvider);
@@ -300,18 +294,23 @@ public class ScratchPadView extends ViewPart {
      */
     public void insertText(String text) {
         if (textArea != null) {
-            // REVIEWME: support inserting at caret position?
-
-            // do a new line if area is not empty and last line isn't empty
-            int lines = textArea.getLineCount();
-            if (lines > 0 && textArea.getLine(lines - 1).length() > 0) {
-                textArea.append("\n"); //$NON-NLS-1$
+            Point selection = textArea.getSelectionRange();
+            // if there's selected text, replace it
+            if (selection.y > 0) {
+                textArea.replaceTextRange(selection.x, selection.y, text);
+                // select the inserted text (which also assures it's visible)
+                textArea.setSelection(selection.x, selection.x + text.length());
             }
-            textArea.append(text);
-
-            // this will both move the caret to the end and scroll the textarea
-            // to the end
-            textArea.setSelection(textArea.getCharCount());
+            else {
+                // otherwise, insert at the caret (or the start if empty)
+                // TODO: insert newline at beginning or end?
+                int caret = Math.max(textArea.getCaretOffset(), 0);
+                textArea.replaceTextRange(caret, 0, text);
+                // and move caret to the end of the new text
+                textArea.setCaretOffset(caret + text.length());
+                // and make sure it's visible
+                textArea.showSelection();
+            }
         }
     }
 
