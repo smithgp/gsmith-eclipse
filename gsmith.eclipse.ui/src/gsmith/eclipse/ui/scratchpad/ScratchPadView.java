@@ -140,7 +140,10 @@ public class ScratchPadView extends ViewPart {
     @Override
     public void createPartControl(Composite parent) {
         textArea = new StyledText(parent,
-                SWT.FULL_SELECTION | SWT.MULTI | SWT.WRAP | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+                SWT.FULL_SELECTION | SWT.MULTI | SWT.WRAP | SWT.H_SCROLL | SWT.V_SCROLL);
+        // the default margins for text Consoles is 2 px (no border), so do that, too
+        textArea.setLeftMargin(2);
+        textArea.setRightMargin(2);
         textArea.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // hook up the theme fonts and colors

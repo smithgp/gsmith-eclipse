@@ -3,7 +3,7 @@
       id="gsmith.eclipse.ui"
       label="Greg&apos;s Useful UI feature"
       version="1.0.0.qualifier"
-      provider-name="Greg Smith (smithgp at gmail dot com)">
+      provider-name="Greg Smith">
 
    <description>
       This feature includes eclipse functionality that I found useful:
@@ -17,7 +17,7 @@
    </description>
 
    <copyright>
-      Copyright (C) 2007-2013 by Greg Smith
+      Copyright (C) 2007-2018 by Greg Smith
    </copyright>
 
    <license>
